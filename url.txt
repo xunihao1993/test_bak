@@ -2,6 +2,7 @@ https://blog.csdn.net/lm_is_dc/article/details/82705450
 https://www.cnblogs.com/bigberg/p/7182741.html
 https://blog.csdn.net/churximi/article/details/51043595
 https://www.runoob.com/python3/python3-errors-execptions.html
+https://blog.csdn.net/qq_29291085/article/details/87797620
 
 #待查
 su - 和 su 空格的区别
