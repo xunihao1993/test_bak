@@ -4,6 +4,6 @@ https://blog.csdn.net/churximi/article/details/51043595
 https://www.runoob.com/python3/python3-errors-execptions.html
 https://blog.csdn.net/qq_29291085/article/details/87797620
 https://docs.oracle.com/cd/E37934_01/html/E36614/remotehowtoaccess-14.html
-
+https://blog.csdn.net/u010104435/article/details/79220267  ##网络爬虫
 #待查
 su - 和 su 空格的区别
