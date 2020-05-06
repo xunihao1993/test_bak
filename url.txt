@@ -13,3 +13,4 @@ https://blog.csdn.net/yuhan963/article/details/79091248  #Xadmin
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
+POINTER   python2,3
