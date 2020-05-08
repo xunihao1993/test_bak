@@ -7,6 +7,7 @@ https://docs.oracle.com/cd/E37934_01/html/E36614/remotehowtoaccess-14.html
 https://blog.csdn.net/u010104435/article/details/79220267  ##网络爬虫
 https://blog.csdn.net/yuhan963/article/details/79091248  #Xadmin
 https://blog.csdn.net/lady_killer9/article/details/80415699 #Xadmin 源码安装
+https://www.cnblogs.com/lyq-biu/p/9513888.html   #xadmin搭后台
 https://blog.csdn.net/Mrqiang9001/article/details/79428976  #redis_windos下
 
 
