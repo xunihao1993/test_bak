@@ -17,3 +17,4 @@ su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
 POINTER   python2,3
 celery.backend_cleanup  #celery
+eval
