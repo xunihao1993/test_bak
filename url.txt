@@ -23,3 +23,4 @@ POINTER   python2,3
 celery.backend_cleanup  #celery
 eval
 map
+正则哪些需要\反义
