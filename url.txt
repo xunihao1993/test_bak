@@ -18,6 +18,7 @@ https://www.runoob.com/w3cnote/python-understanding-dict-copy-shallow-or-deep.ht
 #收纳笔记
 https://blog.csdn.net/chichoxian/article/details/54948875 
 https://blog.csdn.net/JNingWei/article/details/77177004  # 异常树
+https://blog.csdn.net/lanyang123456/article/details/77119618 #djcelery 日志
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
