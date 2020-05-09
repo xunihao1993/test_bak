@@ -12,6 +12,8 @@ https://blog.csdn.net/Mrqiang9001/article/details/79428976  #redis_windos下
 https://www.cnblogs.com/klvchen/p/10881460.html   # ORM新增数据
 https://www.jianshu.com/p/fdc5a5854b04   # pycrypto
 https://stackoom.com/question/13pxG/Django-Celery-Beat-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8DatabaseScheduler%E4%BC%A0%E9%80%92%E5%8F%82%E6%95%B0  #django beat
+https://www.runoob.com/w3cnote/python-understanding-dict-copy-shallow-or-deep.html # 对象的拷贝
+
 #收纳笔记
 https://blog.csdn.net/chichoxian/article/details/54948875 
 #待查
