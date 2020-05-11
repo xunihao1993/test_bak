@@ -30,3 +30,4 @@ map
 正则哪些需要\反义
 time模块
 工程目录下的静态文件存放路径
+django-object-actions
