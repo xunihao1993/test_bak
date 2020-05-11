@@ -15,6 +15,7 @@ https://stackoom.com/question/13pxG/Django-Celery-Beat-%E5%A6%82%E4%BD%95%E4%BD%
 https://www.runoob.com/w3cnote/python-understanding-dict-copy-shallow-or-deep.html # 对象的拷贝
 https://blog.csdn.net/xu1988923/article/details/91949932  #simpleui
 https://www.cnblogs.com/superhin/p/12192335.html #admin页面修改添加按钮
+https://github.com/newpanjing/simpleui/blob/master/QUICK.md # simpleui自定义按钮
 
 #收纳笔记
 https://blog.csdn.net/chichoxian/article/details/54948875 
