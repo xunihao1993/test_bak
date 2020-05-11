@@ -21,6 +21,7 @@ https://www.cnblogs.com/supery007/p/8146035.html  #django文件下载
 https://blog.csdn.net/chichoxian/article/details/54948875 
 https://blog.csdn.net/JNingWei/article/details/77177004  # 异常树
 https://blog.csdn.net/lanyang123456/article/details/77119618 #djcelery 日志
+https://www.jianshu.com/p/2f5ce7b0355c  #django数据导入导出
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
