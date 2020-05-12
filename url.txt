@@ -40,3 +40,4 @@ time模块
 工程目录下的静态文件存放路径
 django-object-actions
 Vue 2.6.11
+cnpm i -g @vue/cli@3.10.0
