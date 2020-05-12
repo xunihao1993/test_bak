@@ -24,7 +24,7 @@ https://blog.csdn.net/lanyang123456/article/details/77119618 #djcelery 日志
 https://www.jianshu.com/p/2f5ce7b0355c  #django数据导入导出
 
 https://blog.csdn.net/qq_21429395/article/details/84777499 #element-vue-admin
-
+https://panjiachen.github.io/vue-element-admin-site/zh/guide/ #element-vue-admin
 
 https://www.cnblogs.com/eagleow/p/10735767.html #admin 标题
 
