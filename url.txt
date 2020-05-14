@@ -42,7 +42,9 @@ django-object-actions
 Vue 2.6.11
 cnpm i -g @vue/cli@3.10.0
 
-
+##windos管理
+https://answers.microsoft.com/zh-hans/windows/forum/all/%E7%B3%BB%E7%BB%9Fd%E7%9B%98%E4%B8%8B%E7%9A%84syst/0677a2d8-62b4-438f-9e3d-c45b2d6a3197
+vssadmin resize shadowstorage /for=D: /on=D: /maxsize=1GB
 
 django==2.2.10
 django-cors-middleware==1.3.1
