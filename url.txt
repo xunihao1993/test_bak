@@ -29,6 +29,10 @@ https://panjiachen.github.io/vue-element-admin-site/zh/guide/ #element-vue-admin
 https://www.cnblogs.com/eagleow/p/10735767.html #admin 标题
 https://www.cnblogs.com/tracylining/articles/3294313.html #django 配置静态
 https://juejin.im/post/5e36d5dc51882520ea398f21 #django Vue前后分离
+
+https://www.cnblogs.com/fnng/p/4119712.html  #Apache2.2
+
+
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
