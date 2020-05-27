@@ -76,3 +76,8 @@ pywin32==227
 pycryptodome=3.9.7
 
 simpleui=4.0.2
+
+
+
+#20200527
+FSCapture
