@@ -16,6 +16,7 @@ https://www.runoob.com/w3cnote/python-understanding-dict-copy-shallow-or-deep.ht
 https://blog.csdn.net/xu1988923/article/details/91949932  #simpleui
 https://www.cnblogs.com/superhin/p/12192335.html #admin页面修改添加按钮
 https://github.com/newpanjing/simpleui/blob/master/QUICK.md # simpleui自定义按钮
+https://github.com/newpanjing/simpleui
 https://www.cnblogs.com/supery007/p/8146035.html  #django文件下载
 ＃收纳笔记
 https://blog.csdn.net/chichoxian/article/details/54948875 
