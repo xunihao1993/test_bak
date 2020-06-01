@@ -410,3 +410,182 @@ urlpatterns = [
     path('', include(api_urls)),
 	path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
 ]
+
+
+## models.py
+# -*-coding:utf-8 -*-
+"""
+-------------------------------------------------------------------------------
+@author  :sdc_os
+@time    :2020/02/10
+@file    :api_url.py
+@desc    :基本的models
+@license :(c) Copyright 2020, SDC.
+-------------------------------------------------------------------------------
+"""
+from __future__ import unicode_literals
+
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+
+
+class AuthToken(Token):
+	"""
+	name:用户访问Token表
+	"""
+	started = models.DateTimeField(_("Started"), auto_now_add=True)
+	expires = models.DateTimeField(_("Expires"), null=True)
+
+
+class ProfileUserMetaclass(type):
+	"""
+	用户元类
+	"""
+	def __new__(cls, name, bases, attrs):
+		if name == 'Model':
+			return type.__new__(cls, name, bases, attrs)
+		fields = []
+		for obj_name, obj in attrs.items():
+			if isinstance(obj, models.Field):
+				fields.append(obj_name)
+			User.add_to_class(obj_name, obj)
+		UserAdmin.fieldsets = list(UserAdmin.fieldsets)
+		UserAdmin.fieldsets.append((name, {'fields': fields}))
+		return type.__new__(cls, name, bases, attrs)
+
+
+class ProfileUser(object, metaclass=ProfileUserMetaclass):
+	GENDER = (
+		('M', "男"),
+		('W', "女"),
+	)
+	USER_CATEGORY = (
+		('0', '自然人'),
+		('1', '系统'),
+	)
+	department = models.CharField(_("Department"), max_length=255, blank=True, null=True)
+	synced = models.DateTimeField(_("Synced"), null=True)
+	avatar = models.TextField(_("Avatar"), blank=True, null=True)
+	short_name = models.CharField(_("ShortName"), max_length=16, blank=True, null=True)
+	sex = models.CharField(_("Sex"), max_length=2, choices=GENDER, blank=True, null=True)
+	category = models.CharField(
+		_("Category"), max_length=4, choices=USER_CATEGORY, default='0', blank=True, null=True)
+
+	def display_department(self, start_index=1, end_index=3):
+		if self.department is None:
+			return ""
+		else:
+			return "\\".join(self.department.split('\\')[start_index:end_index])
+
+
+class Base(models.Model):
+	"""
+	基础表，后续的app中models的定义都继承此表
+	"""
+	creator = models.CharField(verbose_name="创建人用户名", max_length=50, blank=False, null=False, )
+	last_mender = models.CharField(verbose_name="最后修改人用户名", max_length=50, blank=False, null=False)
+	create_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)
+	last_modified_time = models.DateTimeField(verbose_name="最后修改时间", auto_now=True)
+
+	class Meta:
+		abstract = True
+
+#定义模型
+
+
+# class Student(Base):
+# 	name = models.CharField(max_length=20)
+# 	sex = models.BooleanField()
+# 	contend = models.CharField(max_length=20)
+# 	age = models.IntegerField()
+# 	isDelete = models.BooleanField(default=False)
+
+
+class LogDownInfo(Base):
+	deviceIp = models.CharField(max_length=200, verbose_name='设备ip段')
+	logSavePath = models.CharField(max_length=200, verbose_name='服务器日志保存路径')
+
+	class Meta:
+		db_table = 'LogDownInfo'
+		verbose_name = '定时下载日志信息表'
+		verbose_name_plural = verbose_name
+
+
+class DeviceInfo(Base):
+	deviceIp = models.CharField(max_length=20, verbose_name='设备ip', primary_key=True)
+	deviceCatena = models.CharField(max_length=20, verbose_name='产品系列号', default='C')
+	sdkName = models.CharField(max_length=20, verbose_name='sdk用户名')
+	sdkPass = models.CharField(max_length=20, verbose_name='sdk密码')
+	sdkPost = models.CharField(max_length=20, verbose_name='sdk端口号')
+	sshName = models.CharField(max_length=20, verbose_name='ssh用户名', null=True, blank=True)
+	sshPass = models.CharField(max_length=20, verbose_name='ssh密码', null=True, blank=True)
+	sshPost = models.CharField(max_length=20, verbose_name='ssh端口号', null=True, blank=True)
+	sftpName = models.CharField(max_length=20, verbose_name='SFTP用户名', null=True, blank=True)
+	sftpPass = models.CharField(max_length=20, verbose_name='SFTP密码', null=True, blank=True)
+	sftpPost = models.CharField(max_length=20, verbose_name='SFTP端口号', null=True, blank=True)
+	sftpPath = models.CharField(max_length=200, verbose_name='sftp绝对路径', null=True, blank=True)
+	deviceLogPath = models.CharField(max_length=200, verbose_name='设备日志路径', null=True, blank=True)
+	deviceBakLogPath = models.CharField(max_length=200, verbose_name='设备备份日志路径', null=True, blank=True)
+
+	class Meta:
+		db_table = 'DeviceInfo'
+		verbose_name = '设备信息维护表'
+		verbose_name_plural = verbose_name
+
+
+class BasisInfo(Base):
+	projectName = models.CharField(max_length=20, verbose_name='母业务',default='sdc_dingzhi')
+	appName = models.CharField(max_length=20, verbose_name='子业务', default='commissionApp')
+	key = models.CharField(max_length=20, verbose_name='配置名')
+	value = models.CharField(max_length=200, verbose_name='配置值')
+
+	class Meta:
+		db_table = 'BasisInfo'
+		verbose_name = '基础配置信息表'
+		verbose_name_plural = verbose_name
+
+
+
+## admin.py
+from __future__ import absolute_import, unicode_literals
+from django.contrib import admin
+# import xadmin
+from commissionApp.models import BasisInfo, LogDownInfo, DeviceInfo
+# Register your models here.
+
+from djcelery.models import TaskState, WorkerState, PeriodicTask, IntervalSchedule, CrontabSchedule
+
+
+
+
+# 定时下载log信息表注册类
+class LogDwonInfoAdmin(admin.ModelAdmin):
+	list_display = ('id', 'deviceIp', 'logSavePath',)
+
+
+# 设备信息维护表
+class DeviceInfoAadmin(admin.ModelAdmin):
+	list_display = ('deviceIp', 'deviceCatena', 'sdkName', 'sdkPass', 'sdkPost',)
+
+
+# 基础配置信息表
+class BasisInfoAdmin(admin.ModelAdmin):
+	list_display = ('projectName', 'appName', 'key', 'value',)
+
+
+# celery - xadmin
+# admin.site.register(IntervalSchedule)  # 存储循环任务设置的时间
+# admin.site.register(CrontabSchedule)  # 存储定时任务设置的时间
+# admin.site.register(PeriodicTask)  # 存储任务
+# admin.site.register(TaskState)  # 存储任务执行状态
+# admin.site.register(WorkerState)  # 存储执行任务的worker
+
+# models
+admin.site.register(LogDownInfo, LogDwonInfoAdmin)
+admin.site.register(DeviceInfo, DeviceInfoAadmin)
+admin.site.site_title = "测试定制组后台管理"
+admin.site.site_header = "测试定制组"
+
