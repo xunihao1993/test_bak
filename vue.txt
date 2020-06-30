@@ -1,0 +1,45 @@
+****20200628
+
+**项目初体验 https://blog.csdn.net/xuqipeter/article/details/80452271
+						 https://juejin.im/post/5b98d393e51d450e810879d7
+						 https://blog.csdn.net/liyuxing6639801/article/details/60325558 # 更改端口号
+						 https://www.csdn.net/gather_2b/MtTaAg0sMDc1MC1ibG9n.html       # 自动补充代码片段
+
+更新npm到最新版本
+npm install -g npm
+
+使用 npm 全局安装 vue-cli 
+npm i -g @vue/cli
+
+创建项目
+vue create my-project
+
+	此处有两个选择：
+	default (babel, eslint)默认套餐，提供babel和eslint支持
+	Manually select features自己去选择需要的功能，提供更多的特性选择。比如如果想要支持 TypeScript ，就应该选择这一项。
+	可以使用上下方向键来切换选项。如果只需要 babel 和 eslint 支持，那么选择第一项，就完事了，静静等待 vue 初始化项目。
+	vue-cli 内置支持了8个功能特性，可以多选：使用方向键在特性选项之间切换，使用空格键选中当前特性，使用 a 键切换选择所有，使用 i 键翻转选项。
+
+
+		对于每一项的功能，此处做个简单描述：
+		TypeScript 支持使用 TypeScript 书写源码
+		Progressive Web App (PWA) Support PWA 支持。
+		Router 支持 vue-router 。
+		Vuex 支持 vuex 。
+		CSS Pre-processors 支持 CSS 预处理器。
+		Linter / Formatter 支持代码风格检查和格式化。
+		Unit Testing 支持单元测试。
+		E2E Testing 支持 E2E 测试。
+		我选择了 Router，Vuex，CSS Pre-processors，Linter / Formatter
+		按住enter进入下一步，接下来都是对之前每项选项的更详细的选择。
+		css选择SCSS/SASS
+		Linter / Formatter选择prettier
+		这一步就是要选择配置文件的位置了。对于 Babel 、 PostCSS 等，都可以有自己的配置文件： .babelrc 、 .postcssrc 等等，同时也可以把配置信息放在 package.json 里面。此处出于对编辑器（ Visual Studio Code ）的友好支持（编辑器一般默认会在项目根目录下寻找配置文件），选择把配置文件放在外面，选择 In dedicated config files
+		待补充
+		Save this as a preset for future projects?这个就是问要不要把当前的这一系列选项配置保存起来，方便下一次创建项目时复用。选择y。
+		选完之后， vue-cli 就根据前面选择的内容，开始初始化项目了。
+		
+进入工程目录升级我们的vue到3.0版本
+vue add vue-next 
+
+
