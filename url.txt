@@ -22,6 +22,7 @@ https://www.cnblogs.com/supery007/p/8146035.html  #django文件下载
 https://blog.csdn.net/chichoxian/article/details/54948875 
 https://blog.csdn.net/JNingWei/article/details/77177004  # 异常树
 https://blog.csdn.net/lanyang123456/article/details/77119618 #djcelery 日志
+https://blog.csdn.net/pzl_pzl/article/details/95222682   # celery 清空队列
 https://www.jianshu.com/p/2f5ce7b0355c  #django数据导入导出
 https://www.cnblogs.com/malcolmfeng/p/6848112.html
 
