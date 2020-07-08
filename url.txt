@@ -36,6 +36,7 @@ https://juejin.im/post/5e36d5dc51882520ea398f21 #django Vue前后分离
 https://www.cnblogs.com/fnng/p/4119712.html  #Apache2.2
 https://book.51cto.com/art/201110/298017.htm   # Apache 启动服务
 https://blog.csdn.net/cats_miao/article/details/82558756  #charam空格配置
+https://segmentfault.com/q/1010000012202637  ##django前后端分离 状态保持
 
 #待查
 su - 和 su 空格的区别
