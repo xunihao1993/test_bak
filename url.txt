@@ -44,6 +44,10 @@ https://www.byincd.com/bobjiang/article-01102/   ##django和vue前后端分离�
  https://blog.starmeow.cn/detail/006f52e9102a8d3be2fe5614f42ba989/    #【Vue+DRF生鲜电商】13.JWT用户认证原理配置，Vue登录接口
  https://www.cnblogs.com/blueskyyj/p/8143826.html  ##python yaml基本使用
 
+
+# 0715
+http://robotframework.org/SeleniumLibrary/
+
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
