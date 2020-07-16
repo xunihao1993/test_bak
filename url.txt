@@ -147,6 +147,6 @@ xlrd (1.0.0)
 xlwt (1.2.0)
 
 
-
+https://www.crifan.com/summary_python_unicodedecode_error_possible_reasons_and_solutions/
 #20200527
 FSCapture
