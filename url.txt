@@ -54,7 +54,7 @@ http://robotframework.org/SeleniumLibrary/
 
 python2 -m pip install --upgrade pip --force-reinstall
 python3 -m pip install --upgrade pip --force-reinstall
-
+https://blog.csdn.net/okm6666/article/details/80064919 ##pip
 
 
 #待查
