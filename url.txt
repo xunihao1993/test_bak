@@ -59,7 +59,8 @@ https://blog.csdn.net/okm6666/article/details/80064919 ##pip
 route add  3.0.0.0  mask 255.0.0.0   90.85.140.1 -p     ###添加路由  不能存在多个网关，网关冲突
 route add  90.0.0.0  mask 255.0.0.0   90.85.140.1 -p
 
-
+###0718
+https://www.jianshu.com/p/668c9777cabe  #mongodb
 
 #待查
 su - 和 su 空格的区别
