@@ -61,7 +61,7 @@ route add  90.0.0.0  mask 255.0.0.0   90.85.140.1 -p
 
 ###0718
 https://www.jianshu.com/p/668c9777cabe  #mongodb
-
+https://blog.csdn.net/u012904764/article/details/77284925  ##windos下 apache
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
