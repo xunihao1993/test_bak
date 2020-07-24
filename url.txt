@@ -49,6 +49,7 @@ https://www.byincd.com/bobjiang/article-01102/   ##django和vue前后端分离�
 http://robotframework.org/SeleniumLibrary/
 https://github.com/robotframework/Selenium2Library
 https://robotframework-userguide-cn.readthedocs.io/zh_CN/latest/
+venv\scripts\python -m pip install  --upgrade  robotframework-selenium2library
 ##0715 待整理笔记
 0x03 分别重装两个版本的pip
 两个版本都默认带有pip的，已装的的pip.exe是默认以python.exe文件启动的，而我们前面修改python.exe分别为python2和python3，所以默认的pip找不到启动文件便无法执行，所以需要进行重装，分别执行如下命令：
