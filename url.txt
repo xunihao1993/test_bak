@@ -72,6 +72,7 @@ EdrawMax
 ##0728
 https://www.jianshu.com/p/87e7ec22045d                ##selenium2library
 https://www.dazhuanlan.com/2019/12/16/5df674b6bdb09/  ##selenium2library
+https://blog.csdn.net/supermozhe/article/details/84918314 ##VSCode调试Html中的脚本
 
 #待查
 su - 和 su 空格的区别
