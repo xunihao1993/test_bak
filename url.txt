@@ -77,6 +77,9 @@ https://blog.csdn.net/supermozhe/article/details/84918314 ##VSCode调试Html中�
 ##0730
 Umi
 
+##0812
+https://blog.csdn.net/galen2016/article/details/71106900  ##css选择器
+
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
