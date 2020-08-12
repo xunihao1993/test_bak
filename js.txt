@@ -1,0 +1,2 @@
+## 0812
+document.evaluate("//div[@class='ucd-droplist-content open']/ul/li[@data-value='1']", document, null, 9, null).singleNodeValue.click();  #点击
