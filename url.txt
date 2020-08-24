@@ -83,6 +83,9 @@ https://blog.csdn.net/galen2016/article/details/71106900  ##css选择器
 ##0817
 https://blog.csdn.net/hqin_520/article/details/104928323  ##react umi  修改端口
 
+##0824
+https://www.cnblogs.com/apple2016/p/11425307.html  ##celery相关配置
+
 #待查
 su - 和 su 空格的区别
 b''  r''   python2的字节流和字符流
