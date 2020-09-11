@@ -3,7 +3,8 @@ D:\react_pro0803\sdcTaas_AutoManualTest\src\services\analysis.js
 D:\react_pro0803\sdcTaas_AutoManualTest\src\utils\index.js
 D:\react_pro0803\sdcTaas_AutoManualTest\src\config\app.js
 
-
+#0911
+----zmage https://github.com/Caldis/react-zmage#edge
 #######20200728
 
     因为react代码一般采用的是JSX的语法，所以编辑器一般都不能像原生js那样进行代码补全。但是实际上vscode是支持react函数代码补全的，这就需要我们自己去配置了。
