@@ -91,6 +91,7 @@ https://www.cnblogs.com/mckean/p/6083489.html ##git小乌龟冲突
 
 ##0920
 MinusCircleOutlined
+CloseCircleOutlined
 
 #待查
 aoto it、pyautogui ##0916
