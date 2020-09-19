@@ -89,6 +89,9 @@ https://www.cnblogs.com/apple2016/p/11425307.html  ##celery相关配置
 ##0907
 https://www.cnblogs.com/mckean/p/6083489.html ##git小乌龟冲突
 
+##0920
+MinusCircleOutlined
+
 #待查
 aoto it、pyautogui ##0916
 su - 和 su 空格的区别
