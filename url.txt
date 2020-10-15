@@ -96,6 +96,7 @@ CloseCircleOutlined
 ##1015
 https://juejin.im/post/6844903748792221703    django mysql 报错
 https://zhaojames0707.github.io/post/django_mysql_gone_away/  django mysql 报错
+https://blog.csdn.net/joyous/article/details/85241822  ##挂载分区
 #待查
 aoto it、pyautogui ##0916
 su - 和 su 空格的区别
