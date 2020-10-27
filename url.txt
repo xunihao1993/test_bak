@@ -98,6 +98,9 @@ https://juejin.im/post/6844903748792221703    django mysql 报错
 https://zhaojames0707.github.io/post/django_mysql_gone_away/  django mysql 报错
 https://blog.csdn.net/joyous/article/details/85241822  ##挂载分区
 
+##1027
+https://blog.csdn.net/vebasan/article/details/7619911  ##mysql执行sql
+
 https://blog.csdn.net/smk108/article/details/79110010 ## 代码高亮
 https://www.jianshu.com/p/4d5ef6808da7     ## react 代码控件
 #待查
