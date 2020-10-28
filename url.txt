@@ -101,6 +101,9 @@ https://blog.csdn.net/joyous/article/details/85241822  ##挂载分区
 ##1027
 https://blog.csdn.net/vebasan/article/details/7619911  ##mysql执行sql
 
+##1028
+https://answers.microsoft.com/zh-hans/windows/forum/all/win10%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E5%91%98/07515a8e-fb8a-4c73-8762-cd667281f2bd
+
 https://blog.csdn.net/smk108/article/details/79110010 ## 代码高亮
 https://www.jianshu.com/p/4d5ef6808da7     ## react 代码控件
 #待查
