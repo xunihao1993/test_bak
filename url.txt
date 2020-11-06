@@ -117,6 +117,7 @@ https://blog.csdn.net/sunjing_/article/details/79146827  ##./configure
 https://blog.csdn.net/zhengTornado/article/details/107580296 ##yasm安装
 
 'Parsed_null_0' and the filter 'auto_scaler_0'  ##ffmpeg报错
+    Stream #0:0(und): Video: hevc (Main) (hvc1 / 0x31637668), yuvj420p(pc, bt709), 3840x2160, 7012 kb/s, 25 fps, 25 tbr, 25 tbn, 25 tbc (default)
 
 yasm 安装 （汇编编译器）
 
