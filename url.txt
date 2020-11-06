@@ -112,9 +112,11 @@ https://www.cnblogs.com/Neeo/articles/11677715.html ##ffmpeg 使用
 https://blog.csdn.net/qq_34971175/article/details/79485665 ##ffmpeg 使用
 https://juejin.im/post/6844903858376818695  ##ffmpeg安装
 https://www.jianshu.com/p/ec941193ac79      ##ffmpeg安装
+https://www.cnblogs.com/yjq520/p/10592958.html  ##ffmpeg 安装
 https://blog.csdn.net/sinat_36458870/article/details/99719071  ##ffmpeg安装
 https://blog.csdn.net/sunjing_/article/details/79146827  ##./configure
 https://blog.csdn.net/zhengTornado/article/details/107580296 ##yasm安装
+
 
 'Parsed_null_0' and the filter 'auto_scaler_0'  ##ffmpeg报错
     Stream #0:0(und): Video: hevc (Main) (hvc1 / 0x31637668), yuvj420p(pc, bt709), 3840x2160, 7012 kb/s, 25 fps, 25 tbr, 25 tbn, 25 tbc (default)
