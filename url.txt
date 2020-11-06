@@ -108,11 +108,13 @@ https://blog.csdn.net/smk108/article/details/79110010 ## 代码高亮
 https://www.jianshu.com/p/4d5ef6808da7     ## react 代码控件
 
 ##1106
-https://juejin.im/post/6844903858376818695  ##ffmpeg  
-https://www.jianshu.com/p/ec941193ac79      ##ffmpeg
-https://blog.csdn.net/sinat_36458870/article/details/99719071  ##ffmpeg
+https://www.cnblogs.com/Neeo/articles/11677715.html ##ffmpeg 使用
+https://blog.csdn.net/qq_34971175/article/details/79485665 ##ffmpeg 使用
+https://juejin.im/post/6844903858376818695  ##ffmpeg安装
+https://www.jianshu.com/p/ec941193ac79      ##ffmpeg安装
+https://blog.csdn.net/sinat_36458870/article/details/99719071  ##ffmpeg安装
 https://blog.csdn.net/sunjing_/article/details/79146827  ##./configure
-https://blog.csdn.net/zhengTornado/article/details/107580296 ##yasm
+https://blog.csdn.net/zhengTornado/article/details/107580296 ##yasm安装
 
 yasm 安装 （汇编编译器）
 
