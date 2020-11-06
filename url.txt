@@ -106,6 +106,36 @@ https://answers.microsoft.com/zh-hans/windows/forum/all/win10%E7%B3%BB%E7%BB%9F%
 
 https://blog.csdn.net/smk108/article/details/79110010 ## 代码高亮
 https://www.jianshu.com/p/4d5ef6808da7     ## react 代码控件
+
+##1106
+https://juejin.im/post/6844903858376818695  ##ffmpeg  
+https://www.jianshu.com/p/ec941193ac79      ##ffmpeg
+https://blog.csdn.net/sinat_36458870/article/details/99719071  ##ffmpeg
+https://blog.csdn.net/sunjing_/article/details/79146827  ##./configure
+https://blog.csdn.net/zhengTornado/article/details/107580296 ##yasm
+
+yasm 安装 （汇编编译器）
+
+tar zxvf yasm-1.2.0.tar.gz
+
+cd yasm-1.2.0/
+
+cat INSTALL
+
+./configure --prefix=/usr/local/yasm
+
+make
+
+make install
+
+export PATH="$PATH:/usr/local/yasm/bin"
+
+/etc/profile 文件末尾添加export PATH="$PATH:/usr/local/yasm/bin"
+
+
+
+
+
 #待查
 aoto it、pyautogui ##0916
 su - 和 su 空格的区别
