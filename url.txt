@@ -120,6 +120,7 @@ https://www.cnblogs.com/frank-quan/p/4289973.html  ##ffmpeg 安装
 
 ##1109
 https://blog.csdn.net/caicaibird0531/article/details/90694849?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf  ##lxml
+https://www.runoob.com/xpath/xpath-syntax.html  ##xpath语法
 
 
 'Parsed_null_0' and the filter 'auto_scaler_0'  ##ffmpeg报错
