@@ -122,6 +122,8 @@ https://www.cnblogs.com/frank-quan/p/4289973.html  ##ffmpeg 安装
 https://blog.csdn.net/caicaibird0531/article/details/90694849?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf  ##lxml
 https://www.runoob.com/xpath/xpath-syntax.html  ##xpath语法
 
+##1120
+https://www.cnblogs.com/canglongdao/p/12204963.html  ##阿里云centos7安装mysqlclient,报错mysql_config:command not found
 
 'Parsed_null_0' and the filter 'auto_scaler_0'  ##ffmpeg报错
     Stream #0:0(und): Video: hevc (Main) (hvc1 / 0x31637668), yuvj420p(pc, bt709), 3840x2160, 7012 kb/s, 25 fps, 25 tbr, 25 tbn, 25 tbc (default)
