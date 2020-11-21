@@ -1,0 +1,892 @@
+# -*- coding: UTF-8 -*-
+# coding=utf-8
+import datetime
+import json
+
+import time
+
+
+
+
+
+
+from coverage.annotate import os
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+from conf.globalVars import debugLogger, G_IPC
+from lib.com.fileOperationWindows import CreateDir
+from lib.http.restful.trasService.apiTrasService import apiTras
+from lib.utils import stepInfo
+import pyautogui
+import re
+from lxml import etree
+
+def getLocatorList(jsontest, text1):
+    '''
+    实现功能：
+    1.查找指定容器里的目标值，并把所有父节点查找出来  以列表的形式输出所有结果集 例如[[父节点,父节点,目标值],[父节点2,父节点2,目标值]]
+    :param jsontest: dict、list、json容器
+    :param text1: 查找目标元素
+    :return resultList 元素层级列表 [[XX,CC,AA]]  list的个数对应多个目标值结果
+    例如： 查找 ‘test’ 节点  输出结果为 [[xx.aa.test],[xx1.aa1.test]] 说明查找到对应2个目标值及相应的父节点
+    '''
+    global resultList  # 列表类型，用来转换出层级结果[[XX,CC,AA]]
+    global parentLevel  # 列表类型，用来临时存储目标值的层级
+    global levelFlag  # 层级标记符 以[{'1':'XX1'},{'2'}:'XX2'] 用来记录当前执行目标值的节点层级，用于输出当前目标值层级关系
+    resultList = []
+    parentLevel = []
+    levelFlag = {}
+    def getNode(json_test, text, CurrentLevel=0):
+        global resultList  # 列表类型，用来转换出层级结果[[XX,CC,AA]]
+        global parentLevel  # 列表类型，用来临时存储目标值的层级
+        global mid
+
+        global levelFlag  # 层级标记符 以[{'1':'XX1'},{'2':'XX2'}] 用来标记当前的层级
+        text = text.decode('utf-8')
+        # 遍历所有key值
+        for i in range(0, len(json_test)):
+            # 判断当前循环体的数据类型：如果是字典则取出所有key值与目标值对比
+            if isinstance(json_test, (dict,)):
+                json_testKey = list(json_test.keys())  # 如果是字典取出key键对应列表
+                mid = json_testKey[i]
+            # 如果当前循环体是列表或元组，则取出对应i索引的列表值与目标值判断
+            if isinstance(json_test, (tuple, list)):
+                mid = json_test[i]
+
+            # 记录当前层级对应的节点
+            levelFlag[CurrentLevel] = mid
+
+            # 找到元素则追加到resultList列表中，同时将父元素追加到resultList列表中
+            if text == mid:
+                # print('找到元素')
+                if CurrentLevel == 0:
+                    resultList.append([mid])
+                else:
+                    for number in range(CurrentLevel):
+                        parentLevel.append(levelFlag[number])
+                    parentLevel.append(mid)
+                    resultList.append(parentLevel)
+                parentLevel = []
+                # resultList='|*|'.join(resultList[::-1])
+                resultList = resultList[::-1]
+            # 找不到元素则遍历下一个key值(dict前提下)
+            elif isinstance(json_test, (dict,)):
+                if json_test[mid] is not None:
+                    if (len(json_test[mid]) >= 1) and isinstance(json_test[mid], (dict,)):
+                        getNode(json_test[json_testKey[i]], text, CurrentLevel + 1)
+        # print(parentLevel )
+        return resultList
+
+    return getNode(jsontest, text1)
+
+
+def getYamlSelector(objectWebApp, findElements, yamlNode='version', parentNode=True, isRsSelector=True):
+    '''
+    实现功能：
+    只需输入yaml变量值，智能匹配出yaml变量中对应的选择器。
+    返回Yaml变量的列表值 或者 选择器
+    :param objectWebApp:    web实例
+    :param findElements:      yaml节点变量
+    :param yamlNode:        指定yaml节点下查找，默认在设备版本节点下查找元素
+    :param parentNode:      返回值是否包含父节点  True:包含父节点， Flase:只返回目标节点值
+    :param isRsSelector:     是否只返回选择器 默认True   True：只返回选择器值   Flase: 返回变量对应整个列表值[[选择器，语言匹配值],]
+    :return:
+    '''
+    if yamlNode == 'version':
+        Node = objectWebApp.versionYaml
+    else:
+        Node = yamlNode
+    findElements_bak = findElements
+    findElements = getLocatorList(objectWebApp.configYaml[Node], findElements)
+    if len(findElements) == 0:
+        debugLogger.error("yaml中%s节点下没有%s元素" % (Node, findElements_bak))
+        raise Exception("yaml中%s节点下没有%s元素" % (Node, findElements_bak))
+    elif len(findElements) == 1:
+        click_list = []  # 初始处理后的结果集
+        click_rslist = []  # 根据不同条件转换后的结果集
+        if yamlNode == 'version':
+            key_dict = objectWebApp.configYaml[objectWebApp.versionYaml]
+        else:
+            key_dict = objectWebApp.configYaml[Node]
+        for i in findElements[0]:
+            locator = key_dict[i]
+            if type(locator) == dict:
+                # click_list.append(locator['info'][0])
+                if locator.has_key('info'):
+                    click_list.append(locator['info'])
+                else:
+                    debugLogger.error("当前节点【%s】无info节点来代表自身选择器，如果节点下有子节点，则父节点必须要有info选择器" % (i))
+                    raise Exception("当前节点【%s】无info节点来代表自身选择器，如果节点下有子节点，则父节点必须要有info选择器" % (i))
+            else:
+                # click_list.append(locator[0])
+                click_list.append(locator)
+            key_dict = locator
+        # True:包含父节点， Flase:只返回目标当前节点值
+        if parentNode:
+            # True： 只返回选择器值  Flase: 返回选择器及对应选择器匹配语言值
+            if isRsSelector:
+                for click_list_bak in click_list:
+                    click_rslist.append(click_list_bak[0])
+                return click_rslist
+            else:
+                return click_list
+        else:
+            if isRsSelector:
+                return click_list[-1][0]
+            else:
+                return click_list[-1]
+    else:
+        debugLogger.error("节点%s下找到了多个名为%s的元素" % (Node, findElements_bak))
+        raise Exception
+
+
+def getTimeNow():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+
+
+def downloadFile(path="D:\\"):
+    '''
+    实现功能：
+    对浏览配置传参，使谷歌浏览器下载时不弹框直接下载
+    :param path: 下载路径
+    :return
+    '''
+    chrome_options = Options()
+    prefs = {"download.default_directory": path, "download.prompt_for_download": False, }
+    chrome_options.add_experimental_option("prefs", prefs)
+
+    driver = webdriver.Chrome(chrome_options=chrome_options)
+    driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+    params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': path}}
+    command_result = driver.execute("send_command", params)
+    try:
+        assert command_result['status'] == 0
+        return driver
+    except AssertionError:
+        return False
+
+
+def actionsWaitLoginInputPresent02(objectWebApp):
+    '''
+    等待登录页面加载
+    :return: True-成功进入登录页面,False-进入登录页面失败
+    '''
+    debugLogger.info("检查是否证书异常界面：证书异常，继续访问")
+    for i in range(3):
+        flag = objectWebApp.pageShouldContainsElement(
+            objectWebApp.configYaml['Public']['overridelink'][0])  # 看看有没有这个元素;下载证书是没有这个元素的,如果没有 就可以直接输入 用户名了
+        if flag:
+            objectWebApp.executeJavascript("document.getElementById('%s').click();" % objectWebApp.configYaml['Public']['overridelink'][0])
+            if objectWebApp.waitUnitlElementIsVisible(objectWebApp.configYaml['Public']['loginUserName'][0]):
+                debugLogger.info("点击证书验证页面成功,跳转至登录页！")
+                return True
+            elif objectWebApp.waitUnitlElementIsVisible(objectWebApp.configYaml['Public']['updatepassWordId'][0]):
+                debugLogger.info("点击证书验证页面成功,跳转至登录页！")
+                return True
+            else:
+                debugLogger.info("点击证书验证页面失败,继续点击该页面！")
+                stepInfo(u"刷新")
+                objectWebApp.browser.reload_page()
+                continue
+        else:
+            return True
+    return False
+
+
+def actionsLogoutAndGoToLogin02(objectWebApp):
+    # 退出登录，回到登录界面
+
+    elementLogout = getYamlSelector(objectWebApp, 'userId', yamlNode='Public', parentNode=False)
+    elementPagesLogin = getYamlSelector(objectWebApp, 'loginUserName', yamlNode='Public', parentNode=False)
+
+    flag = objectWebApp.waitUnitlPageContainsElement(elementLogout)
+    if flag:
+        debugLogger.info(u"点击 注销")
+        jsClick(objectWebApp, 'logout', yamlNode='Public')
+        time.sleep(2)
+        debugLogger.info(u"弹出的对话框，点击 确定")
+        jsClick(objectWebApp, 'okLogout', yamlNode='Public')
+    else:
+        debugLogger.info(u"未找到右上角退出登录框元素")
+        raise Exception
+    indexPageFalg = objectWebApp.waitUnitlPageContainsElement(elementPagesLogin,10)
+    if indexPageFalg:
+        return True
+    else:
+        debugLogger.info(u"失败，未退出到 登录 页面")
+        return False
+
+
+def actionsLoginWeb02(objectWebApp, username, password, period_id=3):
+    '''
+    输入用户名跟密码,进行登录
+    :param username:用户名
+    :param loginpassword:密码
+    :param period_id:密码有效期
+    :return:
+    '''
+    # 检查是否 首次访问，需要设置密码
+    flag = objectWebApp.waitUnitlElementIsVisible(objectWebApp.configYaml['Public']['updatepassWordId'][0], timeout=20)
+    if flag:
+        debugLogger.info("检查是否 首次访问设置密码，检查结果：%s" % flag)
+
+        if objectWebApp.getElementVisible(objectWebApp.configYaml['Public']['oldPasswordId'][0]):
+            debugLogger.info("输入当前用户密码")
+            objectWebApp.inputText(objectWebApp.configYaml['Public']['oldPasswordId'][0], password)
+
+        debugLogger.info("设置密码")
+        objectWebApp.inputText(objectWebApp.configYaml['Public']['updatepassWordId'][0], password)
+
+        debugLogger.info("再次输入密码")
+        objectWebApp.inputText(objectWebApp.configYaml['Public']['updatepassWordId2'][0], password)
+
+        if objectWebApp.getElementVisible(objectWebApp.configYaml['Public']['pwdPeriodId'][0]):
+            debugLogger.info("输入密码有效期")
+            objectWebApp.inputText(objectWebApp.configYaml['Public']['pwdPeriodId'][0], period_id)
+
+        debugLogger.info("点击确定")
+        objectWebApp.clickButton(objectWebApp.configYaml['Public']['ok'][0])
+        time.sleep(6)
+    language = objectWebApp.markLanguage
+    debugLogger.info("设置界面语言：%s" % language)
+
+    language_now = getJsText(objectWebApp, 'loginLanguage', yamlNode='Public')  # 获取当前页面语言
+    debugLogger.info("当前设备语言为%s" % language_now)
+    dicLanguage = getYamlSelector(objectWebApp, language, yamlNode='Public', parentNode=False, isRsSelector=False)  # 获取当前需要设置的语言选择器
+    if dicLanguage[1] != language_now.encode("utf-8"):
+        debugLogger.info("设备语言【%s】与设置语言【%s】不一致" % (language_now,dicLanguage[1]))
+        jsClick(objectWebApp, dicLanguage[0], yamlNode='Public', MatchYaml=False)
+        time.sleep(3)
+        test = getJsText(objectWebApp, 'loginLanguage', yamlNode='Public')  # 获取当前页面语言
+        debugLogger.info("切换后设备语言为%s" % test)
+    else:
+        time.sleep(1)
+    debugLogger.info("对可能出现的控件弹出框进行跳过操作")
+    solveActiveX()
+    if not objectWebApp.waitUnitlElementIsVisible(objectWebApp.configYaml['Public']['loginUserName'][0]):
+        debugLogger.error("进入相机登陆页面失败")
+        raise Exception
+    debugLogger.info("开始登录")
+    debugLogger.info("输入用户名")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['loginUserName'][0], username)
+
+    debugLogger.info("输入密码")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['loginPwd'][0], password)
+
+    debugLogger.info("点击‘登录’按钮")
+    # objectWebApp.clickElement(objectWebApp.configYaml['Public']['loginBtn'][0])
+    jsClick(objectWebApp, 'loginBtn', yamlNode='Public')
+
+    # # 判断是否存在google的控件安装提示，如有，则进行跳过操作
+    # if G_IPC.VAR_BROESER_TYPE == "chrome":
+    #     for i in range(3):
+    #         time.sleep(1)
+    #         flag = objectWebApp.getElementIsDispalyed(objectWebApp.findElement(["class_name", "ucd-check-mark"]))
+    #         if flag == True:
+    #             objectWebApp.clickCheckBox(objectWebApp.findElement(["class_name", "ucd-check-mark"]), True)
+    #             objectWebApp.clickLeft(objectWebApp.findElement(["id", "skipBtnID"]))
+    #             break
+    # 等待主界面加载出来
+
+def confirmLogin(objectWebApp):
+    """
+    【FUNC】先校验用户Id和预览配置Id是否出现，若没有，则判断是否有登录错误提示，则可能页面卡死，刷新后再次判断用户Id和预览配置Id是否出现
+    """
+    for i in range(3):
+        debugLogger.info("进行第%s次判断登录是否成功" % i)
+        checkResult = objectWebApp.waitUnitlPageContainsElement(objectWebApp.configYaml['Public']['userId'][0])
+
+        debugLogger.info("当前版本映射元素为：%s" % objectWebApp.versionYaml)
+        if objectWebApp.versionYaml is not None and objectWebApp.versionYaml != "":
+            previewFlag = objectWebApp.waitUnitlPageContainsElement(getYamlSelector(objectWebApp, "Preview", parentNode=False))
+            debugLogger.info("当前能匹配到版本元素.校验预览配置元素【%s】出现结果为【%s】" % (getYamlSelector(objectWebApp, "Preview", parentNode=False),previewFlag))
+        else:
+            previewFlag = True
+            debugLogger.info("当前无法匹配版本下的元素，之后不做预览配置的判断")
+        if checkResult and previewFlag:
+            debugLogger.info("登录成功")
+            time.sleep(3)
+            # debugLogger.info("当前全局版本变量为：【%s】" % objectWebApp.version)
+            # objectWebApp.version = objectWebApp.getText('version')
+            # debugLogger.info("web端获取当前设备版本为:【%s】" % objectWebApp.version)
+            # if objectWebApp.version:
+            #     objectWebApp.version = str(objectWebApp.version).split("：")[-1]
+            #     debugLogger.info("web端处理后的版本元素为:%s" % objectWebApp.version)
+            return True
+        else:
+            if i == 0:  # 只有第一次需要去判断有没有登陆错误提示
+                loginErrMsg = objectWebApp.getText(objectWebApp.configYaml['Public']['loginErrMsgSpan'][0])
+            else:
+                loginErrMsg = False
+            if loginErrMsg:
+                debugLogger.error("登录失败，页面提示语为：%s" % loginErrMsg)
+                raise Exception
+            else:
+                debugLogger.info("刷新页面后再次进行尝试")
+                objectWebApp.refresh_web()
+    debugLogger.error("刷新3次后仍未登陆成功")
+    raise Exception
+
+
+def elementsClick(objectWebApp, click_info, continuum=True, yamlNode='version', timeout=30):
+    '''
+    实现功能：
+    一、能智能匹配yaml里面的元素、实现只需输入变量名，自动取出对应选择器
+    二、 支持单次点击、支持按层次依次点击元素
+    :param click_info: str--config_XX.yaml对应变量名
+    :param continuum:True--依次点击，会依次从元素的父节点依次点击到目标元素
+                      False-仅点击对应元素即点击一次 (用于同层级下的点击)
+    :param yamlNode: 指定yaml节点下查找，默认在设备版本节点下查找元素
+    '''
+    click_list = getYamlSelector(objectWebApp, click_info, yamlNode=yamlNode)
+
+    if continuum is False:
+        if objectWebApp.waitUnitlElementIsVisible(click_list[-1]):
+            objectWebApp.clickElement(click_list[-1])
+        else:
+            debugLogger.error("未找到元素：%s" % click_list[-1])
+            raise Exception
+    else:
+        for i in range(3):
+            for i in click_list:
+                flag = objectWebApp.waitUnitlElementIsVisible(i)
+                if flag:
+                    result = objectWebApp.clickElement(i)
+                    if result is False:
+                        debugLogger.error("点击页面中%s失败,进行尝试第二次点击" % str(i))
+                        result = objectWebApp.clickElement(i)
+                        if result is False:
+                            debugLogger.error("第二次点击页面中%s失败" % str(i))
+                else:
+                    debugLogger.error("页面中未找到%s" % str(i))
+                    break
+            if flag:
+                return True
+            debugLogger.info("刷新页面后再次进行尝试")
+            objectWebApp.refresh_web()
+        debugLogger.error("多次刷新后尝试仍然失败")
+        raise Exception
+
+def uploadLocalFile(objectWebApp, localFilePath, enble=False, collectID='00000000000000000001', **kwargs):
+    '''
+    将本地的文件传到云服务器上 自动化方案策略 该服务器停用
+    :param localFilePath: 本地文件路径
+    :param enble: 是否上传云上服务器  默认有False
+    :param collectID: 收集ID
+    :param kwargs: 用例信息
+    '''
+    if enble:
+        debugLogger.info("【收集WEB截图开始】")
+        objectWebApp.getScreenShot(localFilePath)
+        res = apiTras.uploadFileAndCollect(collectID, kwargs['functionName'], "WebUiScreenShot.jpg", localFilePath)
+        if res != False:  # url connect success
+            try:
+                resJson = json.loads(res)
+            except Exception:
+                resJson = res
+            errCode = resJson['ErrorInfo']['errCode']
+            if errCode != "0":
+                debugLogger.info("Error code:%s" % errCode)
+                debugLogger.info("Error desc:%s" % resJson['ErrorInfo']['errDec'])
+            fileSavePath = resJson['MsgInfo']['fileSavePath']
+            debugLogger.info("WEB截图已归档:%s" % fileSavePath)
+        else:
+            debugLogger.error("上传文件到服务器失败")
+        debugLogger.info("【收集WEB截图结束】")
+    else:
+        debugLogger.info("截图不上传云上服务器")
+        debugLogger.info("【收集WEB截图开始】")
+        objectWebApp.capture_page_screenshot(localFilePath)
+
+
+# 简单恢复默认配置RestoreDefaultSettings.
+def RestoreDefaultSettings(objectWebApp, username, password, period_id=3):
+    debugLogger.info("恢复默认配置")
+    elementsClick(objectWebApp, "Restore")
+
+    debugLogger.info("输入密码")
+    # objectWebApp.inputText(objectWebApp.configYaml["8.0.1"]["Public"]['defaultCheckPasswdId'][0], password)
+    objectWebApp.inputText(getYamlSelector(objectWebApp, 'defaultCheckPasswdId', parentNode=False), password)
+
+    debugLogger.info("点击确定按钮")
+    # objectWebApp.clickElement(objectWebApp.configYaml["8.0.1"]['Public']['defaultCheckPasswordTipdialog'][0])
+    objectWebApp.clickElement(getYamlSelector(objectWebApp, 'defaultCheckPasswordTipdialog', parentNode=False))
+
+    try:
+        debugLogger.info("等待元素出现")
+        for i in range(5):
+            objectWebApp.waitUnitlElementIsVisible(objectWebApp.configYaml["Public"]["updatepassWordId"][0], timeout=100)
+    except Exception:
+        debugLogger.error("未出现%s元素" % objectWebApp.configYaml["Public"]["updatepassWordId"][0])
+
+    debugLogger.info("输入新密码")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['updatepassWordId'][0], password)
+
+    debugLogger.info("再次输入密码")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['updatepassWordId2'][0], password)
+    if objectWebApp.getElementVisible(objectWebApp.configYaml['Public']['pwdPeriodId'][0]):
+        debugLogger.info("输入密码有效期")
+        objectWebApp.inputText(objectWebApp.configYaml['Public']['pwdPeriodId'][0], period_id)
+
+    debugLogger.info("点击确定")
+    objectWebApp.clickButton(objectWebApp.configYaml['Public']['ok'][0])
+    time.sleep(6)
+
+    debugLogger.info("开始登录")
+    debugLogger.info("输入用户名")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['loginUserName'][0], username)
+
+    debugLogger.info("输入密码")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['loginPwd'][0], password)
+
+    debugLogger.info("点击‘登录’按钮")
+    objectWebApp.clickElement(objectWebApp.configYaml['Public']['loginBtn'][0])
+
+    time.sleep(5)
+
+
+# 远程重启
+def WebReboot(objectWebApp, username, password):
+    debugLogger.info("点击远程重启")
+    elementsClick(objectWebApp, "RemoteRestart")
+    debugLogger.info("点击确定按钮")
+    getYamlSelector(objectWebApp, 'ucddialogbtn', parentNode=False)
+    # objectWebApp.clickElement(objectWebApp.configYaml["8.0.1"]['Public']['ucddialogbtn'][0])
+    objectWebApp.clickElement(getYamlSelector(objectWebApp, 'ucddialogbtn', parentNode=False))
+    try:
+        debugLogger.info("等待元素出现")
+        for i in range(5):
+            objectWebApp.waitUnitlElementIsVisible(objectWebApp.configYaml["Public"]["loginUserName"][0], timeout=100)
+    except Exception:
+        debugLogger.error("未出现%s元素" % objectWebApp.configYaml["Public"]["loginUserName"][0])
+
+    debugLogger.info("开始登录")
+    debugLogger.info("输入用户名")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['loginUserName'][0], username)
+
+    debugLogger.info("输入密码")
+    objectWebApp.inputText(objectWebApp.configYaml['Public']['loginPwd'][0], password)
+
+    debugLogger.info("点击‘登录’按钮")
+    objectWebApp.clickElement(objectWebApp.configYaml['Public']['loginBtn'][0])
+    time.sleep(5)
+
+
+def jsClick(objectWebApp, selectorOrYamlflag, MatchYaml=True, yamlNode='version',timeout=30):
+    '''
+    【重点】 因IE中js不支持xpath选择器，所以仅支持CSS选择器或yaml中ID和CSS选择器
+    实现功能：1、自动校验选择器匹配元素在页面是否存在 不存在则抛出异常
+              2、通过js实现点击功能，解决下拉框点击不稳定情况
+
+    :param objectWebApp:  web实例
+    :param selectorOrYamlflag:  选择器或者yaml变量值
+    :param MatchYaml:   True: selectorOrYamlflag则输入值为yaml文件中的变量，智能匹配出选择器， Flase: selectorOrYamlflag则输入值为标准css选择器
+    :param yamlNode: 智能匹配下yaml节点值
+    :return:
+    '''
+
+    if MatchYaml:
+        cssOrIdSelector = getYamlSelector(objectWebApp, selectorOrYamlflag, yamlNode=yamlNode, parentNode=False)
+        JudgmentElement = cssOrIdSelector  # 变量：判断选择器对应元素是否存在
+        if cssOrIdSelector.startswith('css:'):
+            cssOrIdSelector = re.sub(r"^css:", "", cssOrIdSelector)
+
+        elif cssOrIdSelector.startswith('xpath:'):
+            debugLogger.error("Xpath选择器不支持通过JS方式点击,输入值【%s】,选择器【%s】" %(selectorOrYamlflag,cssOrIdSelector))
+            raise Exception("Xpath选择器不支持通过JS方式点击,输入值【%s】,选择器【%s】" %(selectorOrYamlflag,cssOrIdSelector))
+        else:
+            cssOrIdSelector = '#' + cssOrIdSelector
+        selectorVlues = cssOrIdSelector
+    else:
+        if selectorOrYamlflag.startswith('css:'):
+            # selectorOrYamlflag = selectorOrYamlflag.lstrip('css:')
+            selectorOrYamlflag = re.sub(r"^css:", "", selectorOrYamlflag)
+        selectorVlues = selectorOrYamlflag
+
+
+    JudgmentElement = 'css:%s' % (selectorVlues)# 变量：判断选择器对应元素是否存在
+    if not objectWebApp.waitUnitlPageContainsElement(JudgmentElement,timeout):
+        debugLogger.error('页面未加载选择器匹配到元素或输入的选择器有误,输入值【%s】,选择器【%s】' %(selectorOrYamlflag,JudgmentElement))
+        raise Exception('页面未加载选择器匹配到元素或输入的选择器有误,输入值【%s】,选择器【%s】' %(selectorOrYamlflag,JudgmentElement))
+
+    debugLogger.info("执行js脚本：return $('%s').click()" % selectorVlues)
+    judgFlag = objectWebApp.executeJavascript('return $("%s").click()' % selectorVlues)
+    if len(judgFlag) != 1:
+        debugLogger.error("js点击失败,有误选择器有误 传入值为【%s】 选择器为【%s】" % (selectorOrYamlflag,selectorVlues))
+        raise Exception("js点击失败,有误选择器有误 传入值为【%s】 选择器为【%s】" % (selectorOrYamlflag,selectorVlues))
+
+
+
+
+def getJsText(objectWebApp, selectorOrYamlflag, MatchYaml=True, yamlNode='version',timeout=30):
+    '''
+    【重点】 因IE中js不支持xpath选择器，所以仅支持CSS选择器或yaml中ID和CSS选择器
+    实现功能：1、自动校验选择器匹配元素在页面是否存在 不存在则抛出异常
+              2、通过js实现获取文本信息，
+
+    :param objectWebApp:  web实例
+    :param selectorOrYamlflag:  选择器或者yaml变量值
+    :param MatchYaml:   True: selectorOrYamlflag则输入值为yaml文件中的变量，智能匹配出选择器， Flase: selectorOrYamlflag则输入值为标准css选择器
+    :param yamlNode: 智能匹配下yaml节点值
+    :param timeout: 判断指定时间内元素是否可见，超出时间做异常处理
+    :return:
+    '''
+
+    if MatchYaml:
+        cssOrIdSelector = getYamlSelector(objectWebApp, selectorOrYamlflag, yamlNode=yamlNode, parentNode=False)
+        JudgmentElement = cssOrIdSelector  # 变量：判断选择器对应元素是否存在
+        if cssOrIdSelector.startswith('css:'):
+            cssOrIdSelector = re.sub(r"^css:", "", cssOrIdSelector)
+        elif cssOrIdSelector.startswith('xpath:'):
+            debugLogger.error("Xpath选择器不支持通过JS方式,输入值【%s】,选择器【%s】" %(selectorOrYamlflag,cssOrIdSelector))
+            raise Exception("Xpath选择器不支持通过JS方式,输入值【%s】,选择器【%s】" %(selectorOrYamlflag,cssOrIdSelector))
+        else:
+            cssOrIdSelector = '#' + cssOrIdSelector
+        selectorVlues = cssOrIdSelector
+    else:
+        if selectorOrYamlflag.startswith('css:'):
+            selectorOrYamlflag = re.sub(r"^css:", "", selectorOrYamlflag)
+        selectorVlues = selectorOrYamlflag
+
+    JudgmentElement = 'css:%s' % (selectorVlues)# 变量：判断选择器对应元素是否存在
+    if not objectWebApp.waitUnitlPageContainsElement(JudgmentElement,timeout):
+        debugLogger.error('页面未加载选择器匹配到元素或输入的选择器有误,输入值【%s】,选择器【%s】' %(selectorOrYamlflag,JudgmentElement))
+        raise Exception('页面未加载选择器匹配到元素或输入的选择器有误,输入值【%s】,选择器【%s】' %(selectorOrYamlflag,JudgmentElement))
+
+    debugLogger.info("执行js脚本：return $('%s').text()" % selectorVlues)
+    judgFlag = objectWebApp.executeJavascript("return $('%s').text()" % selectorVlues)
+    if judgFlag == u'':
+        debugLogger.error("js获取文本失败,有误选择器有误 传入值为【%s】 选择器为【%s】" % (selectorOrYamlflag,selectorVlues))
+        raise Exception("js获取文本失败,有误选择器有误 传入值为【%s】 选择器为【%s】" % (selectorOrYamlflag,selectorVlues))
+    return judgFlag
+def getSourceId(objectWebApp,Yamlflag,SubnodeOrChildnode=True,yamlNode='version',timeout=30):
+    '''
+    解析当前页面HTML源获取指定yaml节点下页面所有子元素ID值
+    配合点击方法实现动态不固定页签点击
+    :param objectWebApp: web实例
+    :param Yamlflag: yaml变量值
+    :param SubnodeOrChildnode: True:获取子节点所有ID值    False：获取所有子孙节点所有ID值
+    :param yamlNode: 智能匹配下yaml节点值  默认版本下的节点值
+    :param timeout: 判断元素在指定时间内是否可见，超出时间做异常处理
+    :return: 返回子元素ID值列表
+    '''
+
+    Selector = getYamlSelector(objectWebApp, Yamlflag, yamlNode=yamlNode, parentNode=False)
+    if objectWebApp.waitUnitlPageContainsElement(Selector,timeout):
+        debugLogger.error('页面未加载选择器匹配到元素或输入的选择器有误,输入值【%s】,选择器【%s】' %(Yamlflag,Selector))
+        raise Exception('页面未加载选择器匹配到元素或输入的选择器有误,输入值【%s】,选择器【%s】' %(Yamlflag,Selector))
+    debugLogger.info("获取当前页面html")
+    html = objectWebApp.getSource()
+    tree = etree.HTML(html)
+    if Yamlflag.startswith('xpath:'):
+        Yamlflag = re.sub(r"^xpath:", "", Yamlflag)
+        if SubnodeOrChildnode:
+            resList = tree.xpath("//%s/*/@id" % Yamlflag)  # //div[@id='SecondProtocolNav']/*/@id
+        else:
+            resList = tree.xpath("//%s//*/@id" % Yamlflag)  # //div[@id='SecondProtocolNav']//*/@id
+    elif Yamlflag.startswith('css:'):
+        debugLogger.error("方法不支持css选择器,输入值【%s】,选择器【%s】" % (Selector, Yamlflag))
+        raise Exception("方法不支持css选择器,输入值【%s】,选择器【%s】" % (Selector, Yamlflag))
+    else:
+        Yamlflag = re.sub(r"^id:", "", Yamlflag)
+        if SubnodeOrChildnode:
+            resList = tree.xpath("//*[@id='%s']/*/@id" % Yamlflag)  # //*[@id='SecondProtocolNav']//*/@id
+        else:
+            resList = tree.xpath("//*[@id='%s']//*/@id" % Yamlflag)  # //*[@id='SecondProtocolNav']//*/@id
+    return resList
+
+
+
+def inputtest(objectWebApp, click_info, text, yamlNode='version'):
+    '''
+    :param objectWebApp: web实例
+    :param click_info:  yaml节点变量值（str）
+    :param text:        需要输入的文本框信息(str)
+    :param yamlNode:    默认版本号下的节点
+    :return:
+    '''
+    # if yamlNode == 'version':
+    #     Node = objectWebApp.versionYaml
+    # else:
+    #     Node = yamlNode
+    # click_info = getLocatorList(objectWebApp.configYaml[Node], click_info)
+    #
+    # click_list = []
+    # key_dict = objectWebApp.configYaml[objectWebApp.versionYaml]
+    # for i in click_info[0]:
+    #     locator = key_dict[i]
+    #     if type(locator) == dict:
+    #         click_list.append(locator['info'][0])
+    #     else:
+    #         click_list.append(locator[0])
+    #     key_dict = locator
+    click_list = getYamlSelector(objectWebApp, click_info, yamlNode=yamlNode)
+    objectWebApp.inputText(click_list[-1], text)
+
+def OQC(ScriptName):
+    """
+    :1:枪机，2：筒机，3：半球，6：球机，7：热成像，8,：多目 9：云台
+    :param ScriptName: 脚本名称
+    :return:
+    """
+    # 测试用例与设备型号相对应
+    Test_Case_dict = {
+        "1": ["test_toMF_OQC_001", "test_toMF_OQC_006", "test_toMF_OQC_007", "test_toMF_OQC_009", "test_toMF_OQC_010", "test_toMF_OQC_013", "test_toMF_OQC_014", "test_toMF_OQC_017"],
+        "2": ["test_toMF_OQC_001", "test_toMF_OQC_002", "test_toMF_OQC_006", "test_toMF_OQC_007", "test_toMF_OQC_009", "test_toMF_OQC_010", "test_toMF_OQC_013", "test_toMF_OQC_014", "test_toMF_OQC_011", "test_toMF_OQC_017"],
+        "3": ["test_toMF_OQC_001", "test_toMF_OQC_002", "test_toMF_OQC_006", "test_toMF_OQC_007", "test_toMF_OQC_009", "test_toMF_OQC_010", "test_toMF_OQC_013", "test_toMF_OQC_014", "test_toMF_OQC_017"],
+        "6": ["test_toMF_OQC_001", "test_toMF_OQC_002", "test_toMF_OQC_003", "test_toMF_OQC_004", "test_toMF_OQC_006", "test_toMF_OQC_007", "test_toMF_OQC_009", "test_toMF_OQC_010",
+              "test_toMF_OQC_011", "test_toMF_OQC_013", "test_toMF_OQC_014", "test_toMF_OQC_017"],
+        "7": ["test_toMF_OQC_017"],
+        "8": ["test_toMF_OQC_017"],
+        "9": ["test_toMF_OQC_001", "test_toMF_OQC_002", "test_toMF_OQC_003", "test_toMF_OQC_004", "test_toMF_OQC_006", "test_toMF_OQC_007", "test_toMF_OQC_009", "test_toMF_OQC_010",
+              "test_toMF_OQC_011", "test_toMF_OQC_013", "test_toMF_OQC_014", "test_toMF_OQC_017"],
+    }
+    devicetype = G_IPC.VAR_IPC_TYPE[1]
+    if devicetype in Test_Case_dict.keys():
+        debugLogger.info(devicetype)
+        debugLogger.info(ScriptName)
+        if ScriptName in Test_Case_dict[devicetype]:
+            pass
+        else:
+            raise Exception("设备不在此条用例测试范围之内,在globalActions.py的OQC方法键值对中无对应映射 %s=>%s" % (devicetype,ScriptName))
+    else:
+        debugLogger.error("设备不在此条用例测试范围之内")
+        raise Exception
+
+def Screenshot(objectWebApp, rsType=0, path="D:\\WebTest", imageName=None):
+    '''
+    截图页面方法
+    :param objectWebApp: web自动化实例
+    :param rsType:  路径返回类型：0：目录路径  1：截图图片路径  默认为0
+    :param path: 保存的目录路径   默认为"D:\\WebTest"
+    :param imageName: 图片保存名字  默认是 时间+款型.jpg
+    :return: 依据rsType而定返回值
+    '''
+    time.sleep(3)
+    timeTemp = time.time()
+    timeTempNext = time.localtime(timeTemp)  # 将一个时间戳转换成一个当前时区的struct_time（自己可以看一下这个结构和C++的差不多）
+    timeNow = time.strftime("%Y-%m-%d-%H-%M-%S", timeTempNext)  # 将此时的struct_time，根据指定的格式化字符串输出
+    path = str(path).decode("utf-8").encode("gbk")
+    if not os.path.exists(path):
+        CreateDir(path)
+    if imageName is None:
+        savePath = os.path.join(path, timeNow + "_" + G_IPC.VAR_IPC_TYPE + ".jpg")  # 字符串的合并生产合理的路径
+    else:
+        savePath = os.path.join(path, imageName)
+    objectWebApp.capture_page_screenshot(savePath)
+
+    if rsType == 0:
+        return path
+    else:
+        return savePath
+
+
+def PageScreenshot(objectWebApp):
+    debugLogger.info("点击本地拍照")
+    elementsClick(objectWebApp, "Preview", continuum=False)
+    time.sleep(5)
+    for i in range(5):
+        # 实况按钮是否处于开启状态
+
+        flag = objectWebApp.waitUnitlElementIsVisible(getYamlSelector(objectWebApp,"StopPreview",parentNode=False))
+        # flag = objectWebApp.waitUnitlElementIsVisible("//div[@class='video-tool-box']/div[@class='video-tool']/div[@class='video-tool-item borderR pr10 pl10']/span[@class='video-tool-icon video-icon1']")
+        if flag == True:
+            jsClick(objectWebApp, "SnapshotId")
+            break
+        else:
+            objectWebApp.refresh_web()
+
+    if i == 4:
+        raise Exception("尝试五次后仍未抓拍成功，请确认是否开启实况")
+    else:
+        flag = objectWebApp.waitUnitlElementIsVisible("openDirectory", timeout=20)
+        if flag == True:
+            path = objectWebApp.getText("openDirectory")  # 弹框:包含抓拍路径
+            s_path = path.split(' ')
+            import os
+            save_path = os.path.split(s_path[1])
+            debugLogger.info(save_path[0])
+            return save_path[0]
+        else:
+            raise Exception("获取抓拍路径失败")
+
+def StartLocalRecording(objectWebApp):
+    for i in range(3):
+        flag = objectWebApp.waitUnitlPageContainsElement(getYamlSelector(objectWebApp, "StopPreview")[-1])
+        if flag:
+            debugLogger.info("当前实况已经开启")
+            break
+        else:
+            debugLogger.error("当前实况未开启，刷新页面后再次进行尝试")
+            objectWebApp.refresh_web()
+    if flag:
+        debugLogger.info("点击开启本地录像")
+        elementsClick(objectWebApp, "RecodeStart", continuum=False)
+    else:
+        raise Exception
+
+
+def StopLocalRecording(objectWebApp):
+    debugLogger.info("点击停止本地录像")
+    elementsClick(objectWebApp, "RecodeStop", continuum=False)
+    debugLogger.info("打印录像保存地址")
+    path = objectWebApp.getText("openRecordDir")
+    s_path = path.split(' ')
+    import os
+    save_path = os.path.split(s_path[1])
+    debugLogger.info(save_path[0])
+    # if not os.path.exists(path):
+    #     CreateDir(path)
+    return save_path[0]
+
+def KXDZ_StopLocalRecording(objectWebApp):
+    debugLogger.info("点击停止本地录像")
+    elementsClick(objectWebApp, "RecodeStop", continuum=False)
+    debugLogger.info("打印录像保存地址")
+    path = objectWebApp.getText("openRecordDir")
+    s_path = path.split(' ')
+    import os
+    save_path = os.path.split(s_path[1])
+    debugLogger.info(save_path[0])
+    # if not os.path.exists(path):
+    #     CreateDir(path)
+    return save_path[1][:-3]
+
+
+
+def MouseOperation(objectWebApp, click_info, waittime, yamlNode='version'):
+    """
+    模拟鼠标点击动作----左键按住，等待waittime秒后左键放开
+    :param objectWebApp:
+    :param click_info: yaml变量名称
+    :param waittime: 左键按住和左键放开之间的等待时间
+    :param yamlNode:
+    :return:
+    """
+    click_list = getYamlSelector(objectWebApp, click_info, yamlNode=yamlNode)
+    if objectWebApp.waitUnitlPageContainsElement(click_list[-1]):
+        if objectWebApp.mouseDown(click_list[-1]):
+            time.sleep(waittime)
+            objectWebApp.mouseUp(click_list[-1])
+        else:
+            debugLogger.error("未找到元素【%s】" % click_list[-1])
+            raise Exception
+    else:
+        raise Exception("页面元素未找到%s" % click_list[-1])
+
+
+
+
+
+
+def clear_input(objectWebApp,click_info, text, yamlNode='version'):
+    """
+    清除元素内容，输入新内容
+    :param objectWebApp:
+    :param click_info: yaml传入变量
+    :param text: 输入的新内容
+    :param yamlNode: yaml节点
+    :return:
+    """
+    # if yamlNode == 'version':
+    #     Node = objectWebApp.versionYaml
+    # else:
+    #     Node = yamlNode
+    # click_info = getLocatorList(objectWebApp.configYaml[Node], click_info)
+    #
+    # click_list = []
+    # key_dict = objectWebApp.configYaml[objectWebApp.versionYaml]
+    # for i in click_info[0]:
+    #     locator = key_dict[i]
+    #     if type(locator) == dict:
+    #         click_list.append(locator['info'][0])
+    #     else:
+    #         click_list.append(locator[0])
+    #     key_dict = locator
+    click_list = getYamlSelector(objectWebApp, click_info, yamlNode=yamlNode)
+    for i in range(3):
+        objectWebApp.keyboardInput(click_list[-1], "\\8")
+    objectWebApp.inputText(click_list[-1], text)
+    objectWebApp.keyboardInput(click_list[-1], "\\13")
+
+
+def enableSshSftp(objectWebApp, type, enable=True):
+    """
+    [FUNC]打开SSH使能或SFTP使能
+    :param objectWebApp:
+    :param type: 类型-ssh/sftp
+    :param enable: True-打开，False-关闭
+    :return:
+    """
+    isEnable = getYamlSelector(objectWebApp, 'SshSftpEnable', parentNode=False)
+    elementsClick(objectWebApp, "SshSftp")
+
+    if type == 'ssh':
+        click_list = getYamlSelector(objectWebApp, 'sshSaveBtnId', parentNode=False)
+        if not objectWebApp.pageShouldContainsElement(click_list):
+            elementsClick(objectWebApp, 'sshTitle', continuum=False)
+        flag = objectWebApp.pageShouldContainsElement(isEnable)
+        if (flag and enable) or (flag == False and enable == False):
+            return True
+        else:
+            jsClick(objectWebApp, 'sshEnableId')
+            return elementsClick(objectWebApp, 'sshSaveBtnId', continuum=False)
+    else:
+        click_list = getYamlSelector(objectWebApp, 'sftpSaveBtnId', parentNode=False)
+        if not objectWebApp.pageShouldContainsElement(click_list):
+            elementsClick(objectWebApp, 'sftpTitle', continuum=False)
+        flag = objectWebApp.pageShouldContainsElement(isEnable)
+        if (flag and enable) or (flag == False and enable == False):
+            return True
+        else:
+            jsClick(objectWebApp, 'sftpEnable')
+            return elementsClick(objectWebApp, 'sftpSaveBtnId', continuum=False)
+
+def solveActiveX():
+    '''
+    解决控件允许弹出框问题
+    :return:
+    '''
+    debugLogger.info("*******开始跳过允许控件操作步骤********")
+    imageDirPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'imageJudg','IEFirstVisitAllow')
+    imageFile=os.listdir(imageDirPath)
+    debugLogger.info("准备识别的图片列表【%s】" % imageFile)
+    pyautogui.FAILSAFE = False
+    x,y = pyautogui.size()
+    ScreenResolution = "%s*%s" % (x,y)
+    debugLogger.info("屏幕分辨率为%s" % (ScreenResolution))
+    for imageFileBak1 in imageFile:
+        imageFileBak = os.path.join(imageDirPath,imageFileBak1)
+        debugLogger.info("读取控件判断图片%s" % imageFileBak)
+        try:
+            buttonlocation=pyautogui.locateCenterOnScreen(imageFileBak)
+            debugLogger.info("进行图片%s判断,当前图片读取到的坐标为%s" % (imageFileBak,buttonlocation))
+            if buttonlocation:
+                debugLogger.info("进行图片识别方式点击【%s,%s】" % (buttonlocation[0], buttonlocation[1]))
+                pyautogui.click(buttonlocation[0], buttonlocation[1], clicks=2, interval=0.5)
+        except Exception as e:
+            debugLogger.info("进行图片坐标点击失败！失败原因【%s】"% e)
+    # 根据屏幕分辨率进行不同分辨率的模拟鼠标点击
+    if ScreenResolution == "1920*1080":
+        debugLogger.info("执行分辨率1920*1080操作")
+        debugLogger.info("进行坐标【%s，%s】方式点击" % (x * 0.7, y * 0.937))
+        pyautogui.click(x*0.7, y*0.937, clicks=3, interval=0.5)
+    elif ScreenResolution == "1280*1024":
+        debugLogger.info("执行分辨率1280*1024操作")
+        debugLogger.info("进行坐标【%s，%s】方式点击" % (1054,958))
+        pyautogui.click(1054, 958, clicks=3, interval=0.5)
+    elif ScreenResolution == "1024*768":
+        debugLogger.info("执行分辨率1024*768操作")
+        debugLogger.info("进行坐标【%s，%s】方式点击" % (858,702))
+        pyautogui.click(858, 702, clicks=3, interval=0.5)
+    else:
+        debugLogger.info("当前分辨率【%s】对应模拟鼠标点击操作" % ScreenResolution)
+    debugLogger.info("*******跳过允许控件操作步骤结束********")
+
+
+
+
+
+
+
