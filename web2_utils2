@@ -1,0 +1,798 @@
+# -*- coding: UTF-8 -*-
+import os
+from Selenium2Library import Selenium2Library
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
+from conf.globalVars import debugLogger, G
+
+
+
+import time
+
+
+import yaml
+from PIL import ImageGrab
+import pyautogui
+def get_yamlfile_info(file_path):
+    '''
+    返回yaml配置文件信息
+    :param file_path:
+    :return:
+    '''
+    cfg_info = {}
+    if os.path.isfile(file_path):
+        with open(file_path, "r") as f:
+            cfg_info = yaml.load(f)
+    return cfg_info
+
+class webAction2(Selenium2Library):
+    def __init__(self, markLanguage='Chinese', explore='ie'):
+        self.explore = explore
+        self.markLanguage = markLanguage
+        self.webLoginUrl = "-1"
+        self.webdriverstatus = ""
+        self.version = None      # 设备版本号
+        self.versionYaml = None  # 映射到对应的yaml版本元素
+        self.eiicoVersion = None  # eiico环境版本号
+        self.browser = Selenium2Library(15)
+        if self.markLanguage == 'Chinese':
+            self.configYaml = get_yamlfile_info(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configYml\config_Chinese.yaml'))  # 获取yaml中文配置信息
+        elif self.markLanguage =='English':
+            self.configYaml = get_yamlfile_info(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configYml\config_English.yaml'))  # 获取yaml英文配置信息
+        elif self.markLanguage =='French':
+            self.configYaml = get_yamlfile_info(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configYml\config_French.yaml'))  # 获取yaml法文配置信息
+        elif self.markLanguage =='Spanish':
+            self.configYaml = get_yamlfile_info(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configYml\config_Spanish.yaml'))  # 获取yaml西班牙配置信息
+
+    def openBrowser(self,browserType,url,isMaxsize=True,pageHeight=600,pageWidth=800):
+        '''
+        打开浏览器
+        :param browser_type: 浏览器的类型IE chrome firfox
+        :param isMaxsize:    布尔值 True 浏览器最大化显示； 如果自定义窗口 则为False
+        :param page_height:  自定义 浏览器的高度
+        :param page_width:   自定义 浏览器的宽度
+        :return:             返回布尔值 成功返回true 操作失败返回false
+        '''
+        if browserType == 'iexplore' or browserType=='ie':
+            browserType='ie'
+            conf = DesiredCapabilities.INTERNETEXPLORER
+            # ie保护模式
+            conf["ignoreProtectedModeSettings"] = True
+            # 全屏判断配置
+            conf["ignoreZoomSetting"] = True
+            conf["trustAllSSLCertificates"] = True
+        else:
+            conf = None
+        pyautogui.FAILSAFE = False
+        x, y = pyautogui.size()
+        try:
+            self.browser.open_browser(url, browserType, desired_capabilities=conf)
+        except Exception:
+            ## 打开浏览器失败，进行可能出现IE首次访问弹窗处理
+            self.FirstVisitAlertProcess()
+            raise Exception
+        try:
+            self.browser.driver.execute_script("document.body.style.transform='scale(1.0)'")
+        except Exception:
+            debugLogger.error("进行js处理失败的弹框处理")
+            time.sleep(10)
+            pyautogui.click(x * 0.52, y * 0.54, clicks=1, interval=0.3)
+            time.sleep(2)
+            os.system('taskkill /im IEDriverServer.exe /F')
+            os.system('taskkill /im iexplore.exe /F')
+        if isMaxsize:
+            # 将浏览器最大化显示
+            self.browser.maximize_browser_window()
+        else:
+            self.browser.set_window_size(pageWidth, pageHeight)
+
+        self.webLoginUrl = url
+        self.webdriverstatus = True
+    def FirstVisitAlertProcess(self):
+        '''
+        IE首次访问弹窗处理
+        :return:
+        '''
+        pyautogui.FAILSAFE = False
+        x, y = pyautogui.size()
+        ScreenResolution = "%s*%s" % (x, y)
+        debugLogger.info("屏幕分辨率为%s" % (ScreenResolution))
+        debugLogger.error("打开浏览器失败，先休眠30秒后进行可能出现IE首次访问弹窗处理")
+        debugLogger.info("通过图片识别判断模拟键盘鼠标功能是否生效")
+        imageDirPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'imageJudg', 'IEFirstVisitAllow','AllowChinese.PNG')
+        try:
+            buttonlocation = pyautogui.locateCenterOnScreen(imageDirPath)
+            debugLogger.info("进行图片%s判断,当前图片读取到的坐标为%s" % (imageDirPath, buttonlocation))
+            if buttonlocation:
+                debugLogger.info("进行图片识别方式点击【%s,%s】" % (buttonlocation[0], buttonlocation[1]))
+        except Exception as e:
+            debugLogger.info("当前模拟键盘鼠标功能失效！失败原因【%s】" % e)
+        time.sleep(30)
+        if ScreenResolution == "1920*1080":
+            debugLogger.info("进行1920*1080分辨率的模拟鼠标键盘操作")
+            debugLogger.info("针对绿色按钮-浏览器全屏情况进行坐标点击【%s,%s】" % (773.0, 455.2))
+            pyautogui.click(773.0, 455.2, clicks=2, interval=0.3)      # 点击绿色按钮-浏览器全屏情况
+            debugLogger.info("针对OK按钮-浏览器全屏情况进行坐标点击【%s,%s】" % (1100, 659.2))
+            pyautogui.click(1100, 659.2, clicks=2, interval=0.3)      # 点击OK按钮-浏览器全屏情况
+            debugLogger.info("针对绿色按钮-浏览器非全屏情况进行坐标点击【%s,%s】" % (447.0, 290.2))
+            pyautogui.click(447.0, 290.2, clicks=2, interval=0.3)      # 点击绿色按钮-浏览器非全屏情况
+            debugLogger.info("针对OK按钮--浏览器非全部情况进行坐标点击【%s,%s】" % (768.0, 529.2))
+            pyautogui.click(768.0, 529.2, clicks=2, interval=0.3)      # 点击OK按钮--浏览器非全部情况
+            pyautogui.press('enter')
+            debugLogger.info("防止突然出现更新窗口的情况")
+            pyautogui.press('esc')
+            pyautogui.click(x * 0.72, y * 0.02, clicks=1, interval=0.3)
+            time.sleep(2)
+        elif ScreenResolution == "1280*1024":
+            debugLogger.info("进行1280*1024分辨率的模拟鼠标键盘操作")
+            pyautogui.click(555.0, 439.2, clicks=2, interval=0.3)      # 点击绿色按钮-浏览器全屏情况
+            pyautogui.click(875.0, 640.2, clicks=2, interval=0.3)      # 点击OK按钮-浏览器全屏情况
+            pyautogui.click(447.0, 290.2, clicks=2, interval=0.3)      # 点击绿色按钮-浏览器非全屏情况
+            pyautogui.click(768.0, 529.2, clicks=2, interval=0.3)      # 点击OK按钮--浏览器非全部情况
+            pyautogui.press('enter')
+            debugLogger.info("防止突然出现更新窗口的情况")
+            pyautogui.press('esc')
+            pyautogui.click(x * 0.72, y * 0.02, clicks=1, interval=0.3)
+            time.sleep(2)
+        elif ScreenResolution == "1024*768":
+            debugLogger.info("进行1024*768分辨率的模拟鼠标键盘操作")
+            pyautogui.click(325.0, 300.2, clicks=2, interval=0.3)      # 点击绿色按钮-浏览器全屏情况
+            pyautogui.click(650.0, 505.2, clicks=2, interval=0.3)      # 点击OK按钮-浏览器全屏情况
+            pyautogui.click(325.0, 290.2, clicks=2, interval=0.3)      # 点击绿色按钮-浏览器非全屏情况
+            pyautogui.click(650.0, 529.2, clicks=2, interval=0.3)      # 点击OK按钮--浏览器非全部情况
+            pyautogui.press('enter')
+            debugLogger.info("防止突然出现更新窗口的情况")
+            pyautogui.press('esc')
+            pyautogui.click(x * 0.72, y * 0.02, clicks=1, interval=0.3)
+            pyautogui.moveTo(x * 0.72, y * 0.02, duration=2)
+            time.sleep(2)
+        os.system('taskkill /im IEDriverServer.exe /F')
+        os.system('taskkill /im iexplore.exe /F')
+    def GetWindowHandles(self):
+        """
+        获取句柄
+        :return:
+        """
+        handles = self.browser.get_window_handles()
+        return handles
+
+    def closeBrowser(self):
+        '''
+        关闭浏览器
+        :return:
+        '''
+        try:
+            self.browser.close_browser()
+        except Exception as e:
+            debugLogger.error("关闭浏览器失败:%s" % e)
+            return False
+
+    def refresh_web(self):
+        '''
+        刷新当前页
+        :return:
+        '''
+        try:
+            self.browser.reload_page()
+            time.sleep(1)
+            debugLogger.info("刷新浏览器成功")
+        except Exception:
+            debugLogger.error("刷新浏览器失败")
+            return False
+
+    def getCurrentUrl(self):
+        '''
+        获取浏览器地址
+        :return:
+        '''
+        try:
+            return self.browser.get_location()
+        except Exception:
+            debugLogger.error("获取浏览器地址失败")
+            return False
+
+    def getCurrentTitle(self):
+        '''
+        获取浏览器页签标题
+        :return:
+        '''
+        try:
+            return self.browser.get_title()
+        except Exception:
+            debugLogger.error("获取浏览器页签标题失败")
+            return False
+
+    # def browserBack(self):
+    #     '''
+    #     浏览器后退
+    #     :return:
+    #     '''
+    #     self.webDrive.back()
+
+    # def browserForward(self):
+    #     '''
+    #     浏览器前进
+    #     :return:
+    #     '''
+    #     self.webDrive.forward()
+
+    def switchToWindow(self,Handle='MAIN', timeout=None):
+        '''
+        切换到指定窗口by句柄
+        '''
+        try:
+            return self.browser.select_window(Handle, timeout)
+        except Exception:
+            debugLogger.error("切换到指定窗口失败")
+            return False
+
+    def switchBrowser(self, index_or_alias):
+        '''
+        切换浏览器
+        '''
+        try:
+            self.browser.switch_browser(index_or_alias)
+            return True
+        except Exception as e:
+            debugLogger.error("切换浏览器失败" % e)
+            return False
+
+    def closeWindow(self):
+        '''
+        关闭窗口
+        '''
+        try:
+            self.browser.close_window()
+            return True
+        except Exception:
+            debugLogger.error("关闭窗口失败")
+            return False
+
+
+    ####################################################################################
+    # 子页面frame选择操作
+    ####################################################################################
+    def selectFrame(self,elementObject):
+        '''
+        选择iframe
+        '''
+        try:
+            self.browser.select_frame(elementObject)
+        except Exception:
+            debugLogger.error("select %s frame failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.error("select %s frame success!" % elementObject)
+            return True
+
+    def unselectFrame(self):
+        '''
+        回到默认iFrame
+        '''
+        try:
+            self.browser.unselect_frame()
+        except Exception:
+            debugLogger.error("unselect frame failed! please check input!")
+            return False
+        else:
+            debugLogger.info("unselect frame success!")
+            return True
+
+
+    ####################################################################################
+    # 输入框操作
+    ####################################################################################
+    def inputText(self, elementObject, text, clear=True):
+        '''
+        输入文本
+        '''
+        try:
+            self.browser.input_text(elementObject, text, clear)
+        except Exception:
+            debugLogger.error("input %s text failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.info("input %s text success!" % elementObject)
+            return True
+
+    def GetText(self, elementObject):
+        '''
+        获取文本
+        '''
+        try:
+            self.browser.get_text(elementObject)
+        except Exception:
+            debugLogger.error("get text %s text failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.info("input %s text success!" % elementObject)
+            return True
+
+
+    ####################################################################################
+    # 鼠标点击操作
+    ####################################################################################
+    def clickElement(self,elementObject, modifier=False, action_chain=False):
+        '''
+        鼠标左键单击
+        modifier`参数可用于传递按键
+                Example:
+        | Click Element | id:button |                   | # Would click element without any modifiers.               |
+        | Click Element | id:button | CTRL              | # Would click element with CTLR key pressed down.          |
+        | Click Element | id:button | CTRL+ALT          | # Would click element with CTLR and ALT keys pressed down. |
+        | Click Element | id:button | action_chain=True | # Clicks the button using an Selenium  ActionChains        |
+        '''
+        try:
+            self.browser.click_element(elementObject, modifier, action_chain)
+        except Exception:
+            debugLogger.error("click %s failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.info("click %s success!" % elementObject)
+            return True
+
+    def clickButton(self,elementObject, modifier=False):
+        '''
+        鼠标左键单击按钮
+        modifier`参数可用于传递按键
+                Example:
+        | Click Element | id:button |                   | # Would click element without any modifiers.               |
+        | Click Element | id:button | CTRL              | # Would click element with CTLR key pressed down.          |
+        | Click Element | id:button | CTRL+ALT          | # Would click element with CTLR and ALT keys pressed down. |
+        | Click Element | id:button | action_chain=True | # Clicks the button using an Selenium  ActionChains        |
+        '''
+        try:
+            self.browser.click_button(elementObject, modifier)
+        except Exception:
+            debugLogger.error("click %s failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.info("click %s success!" % elementObject)
+            return True
+
+    def doubleClickElement(self,elementObject):
+        '''
+        鼠标左键双击
+        '''
+        try:
+            self.browser.double_click_element(elementObject)
+        except Exception:
+            debugLogger.error("double click %s failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.info("double click %s success!" % elementObject)
+            return True
+
+    # def clickRight(self,elementObject):
+    #     '''
+    #     鼠标右键单击
+    #     '''
+    #     if elementObject == False:
+    #         return "NoSuchElement"
+    #     ActionChains(self.webDrive).context_click(elementObject).perform()
+    #     return True
+    #
+    def mouseDown(self,elementObject):
+        '''
+        鼠标左键按下
+        '''
+        try:
+            self.browser.mouse_down(elementObject)
+            debugLogger.info("鼠标左键按下成功")
+            return True
+        except Exception:
+            debugLogger.error("鼠标左键按下失败")
+            return False
+
+    def mouseUp(self,elementObject):
+        '''
+        鼠标左键放开
+        '''
+        try:
+            self.browser.mouse_up(elementObject)
+            debugLogger.info("鼠标左键放开成功")
+            return True
+        except Exception:
+            debugLogger.error("鼠标左键放开失败")
+            return False
+    #
+    # def releaseLeft(self,elementObject):
+    #     '''
+    #     鼠标左键放开
+    #     '''
+    #     if elementObject == False:
+    #         return "NoSuchElement"
+    #     ActionChains(self.webDrive).release().perform()
+    #     return True
+    def mouseMoveTo(self,elementObject):
+        '''
+        鼠标光标移动到元素上
+        '''
+        try:
+            self.browser.mouse_over(elementObject)
+            debugLogger.info("鼠标移到元素上成功")
+            return True
+        except Exception:
+            debugLogger.error("鼠标移到元素上失败")
+            return False
+
+    def drapAndDrop(self,elementObject_Source, elementObject_Target):
+        '''
+        拖动元素到另一个元素上
+        '''
+        try:
+            self.browser.drag_and_drop(elementObject_Source, elementObject_Target)
+            debugLogger.info("鼠标从%s拖到%s成功" % elementObject_Source, elementObject_Target)
+            return True
+        except Exception:
+            debugLogger.error("鼠标从%s拖到%s失败" % elementObject_Source, elementObject_Target)
+            return False
+
+    # def drapAndMove(self,elementObject_Source,xoffset,yoffset):
+    #     '''
+    #     拖动元素到某个位置
+    #     '''
+    #     if elementObject_Source == False:
+    #         return "NoSuchElement"
+    #     self.browser.click_and_hold(elementObject_Source).move_by_offset(xoffset,yoffset).release().perform()
+    #     return True
+    ####################################################################################
+    # 复选框操作
+    ####################################################################################
+    # def clickCheckBox(self,elementObject, Value):
+    #     '''
+    #     复选框操作，Value为True表示选中，False表示不选中
+    #     '''
+    #     if elementObject == False:
+    #         return "NoSuchElement"
+    #     if Value == True:
+    #         if not elementObject.is_selected():
+    #             elementObject.click()
+    #             return True
+    #     elif Value == False:
+    #         if elementObject.is_selected():
+    #             elementObject.click()
+    #             return True
+    #     else:
+    #         return False
+
+
+
+    ####################################################################################
+    # 页面元素信息查询
+    ####################################################################################
+    def getText(self,elementObject):
+        '''
+        获取文本
+        '''
+        if self.waitUnitlElementIsVisible(elementObject):
+            try:
+                text = self.browser.get_text(elementObject)
+            except Exception:
+                debugLogger.error("get %s text failed! please check input!" % elementObject)
+                return False
+            else:
+                debugLogger.info("get %s text success!" % elementObject)
+                return text
+        else:
+            return False
+
+    def getElementAttributeValue(self,elementObject, attributeName):
+        '''
+        获取控件属性值
+        '''
+        try:
+            attribute = self.browser.get_element_attribute(elementObject, attributeName)
+        except Exception:
+            debugLogger.error("get %s attribute failed! please check input!" % elementObject)
+            return False
+        else:
+            debugLogger.info("get %s attribute success!" % elementObject)
+            return attribute
+
+    def getElementSize(self, elementObject):
+        '''
+        获取控件尺寸
+        '''
+        try:
+            width, height = self.browser.get_element_size(elementObject)
+        except Exception:
+            debugLogger.error("get %s size failed! please check input!" % elementObject)
+            return None, None
+        else:
+            debugLogger.info("get %s size success!" % elementObject)
+            return width, height
+
+    def getElementVisible(self, locator, message=None):
+        '''
+        获取元素在页面上的可见性
+        '''
+        try:
+            self.browser.element_should_be_visible(locator, message)
+        except Exception:
+            debugLogger.info("find %s is not visible! please check input!" % locator)
+            return False
+        else:
+            debugLogger.info("find %s success!" % locator)
+            return True
+
+    ####################################################################################
+    # 模拟键盘输入
+    ####################################################################################
+    def keyboardInput(self,locator, key):
+        ''''
+        模拟键盘输入
+        :locator: id
+        :key:键盘输入的值。字符串或以“ \\”开头的键的数字ASCII码
+        详情搜索https://www.bejson.com/othertools/keycodes/
+        :0:NULL
+        :8:BACK_SPACE
+        :9:TAB
+        :10:RETURN
+        :13:ENTER
+        :24:CANCEL
+        :27:ESCAPE
+        :32:SPACE
+        :42:MULTIPLY
+        :43:ADD
+        :44:SEPARATOR
+        :45:SUBTRACT
+        :56:DECIMAL
+        :57:DIVIDE
+        :59:SEMICOLON
+        :61:EQUALS
+        :127:DELETE
+        '''
+        try:
+            self.browser.press_key(locator, key)
+            debugLogger.info("模拟键盘输入成功")
+            return True
+        except Exception:
+            debugLogger.error("模拟键盘输入失败")
+            return False
+
+    def keyboardInputs(self, locator, *keys):
+        """
+        key组合
+        :locator:id
+        :key:组合键
+        :return:
+        """
+        try:
+            self.browser.press_keys(locator, *keys)
+            debugLogger.info("模拟键盘输入成功")
+            return True
+        except Exception:
+            debugLogger.error("模拟键盘输入失败")
+            return False
+
+    ####################################################################################
+    # 页面逻辑组合操作
+    ####################################################################################
+    def getTimeList(self, timeout):
+        time_list = []
+        while timeout >0:
+            if len(time_list)<6:
+                time_list.append(1)
+                timeout-=1
+            else:
+                timeout -= 2
+                if timeout== -1:
+                    time_list.append(1)
+                else:
+                    time_list.append(2)
+            # time_list.append(timeout)
+            # timeout = (timeout+1)//2
+        # time_list.append(1)
+        # time_list.reverse()
+        debugLogger.info("waittime list is %s" % str(time_list))
+        return time_list
+
+    def pageShouldContainsElement(self, selectorInfo, message=None, loglevel='TRACE', limit=None):
+        '''
+        页面是否含有某元素
+        :param selectorInfo:   元素 使用的值  如果是id  就是ID值
+        :return: True or False
+        '''
+        try:
+            self.browser.page_should_contain_element(selectorInfo, message, loglevel, limit)
+            return True
+        except Exception:
+            debugLogger.error("页面中未找到元素%s" % selectorInfo)
+            return False
+
+    def waitUnitlPageContainsElement(self, selectorInfo, timeout=30, error=None, limit=None):
+        '''
+        等待界面某一元素加载出来
+        等待当前页面中某指定元素出现。
+        等待超时执行失败
+        :param selectorInfo:   得到元素 使用的值  如果是id  就是ID值
+        :param Timeout:         设定的时间
+        :return: True 元素加载时间小于等于设定时间；反之Flase 表示加载时间大于设定时间
+        '''
+        time_list = self.getTimeList(timeout)
+        for timeout in time_list:
+            try:
+                self.browser.wait_until_page_contains_element(selectorInfo, timeout, error, limit)
+                return True
+            except Exception:
+                pass
+        debugLogger.error("等待一段时间后元素%s仍未加载出来" % selectorInfo)
+        return False
+
+    def waitUnitlPageContains(self, text, timeout=30, error=None, limit=None):
+        '''
+        等待界面某一文本加载出来
+        :param selectorInfo:   得到元素 使用的值  如果是id  就是ID值
+        :param Timeout:         设定的时间
+        :return: True 元素加载时间小于等于设定时间；反之Flase 表示加载时间大于设定时间
+        '''
+        time_list = self.getTimeList(timeout)
+        for timeout in time_list:
+            try:
+                self.browser.wait_until_page_contains(text, timeout, error, limit)
+                return True
+            except Exception:
+                pass
+        debugLogger.error("等待一段时间后文本框中仍未加载出来文本%s" % text)
+        return False
+
+    def waitUnitlElementIsVisible(self, selectorInfo, timeout=30, error=None):
+        '''
+        等待页面中指定元素可见,
+        等待超时执行失败。
+        :param selectorInfo:   得到元素 使用的值  如果是id  就是ID值
+        :param Timeout:         设定的时间
+        :return: True 元素加载时间小于等于设定时间；反之Flase 表示加载时间大于设定时间
+        '''
+        time_list = self.getTimeList(timeout)
+        for timeout in time_list:
+            try:
+                self.browser.wait_until_element_is_visible(selectorInfo, timeout, error)
+                return True
+            except Exception:
+                pass
+        debugLogger.error("等待一段时间后元素%s仍未可见" % selectorInfo)
+        return False
+
+    def waitUntilElementContains(self,selectorInfo, text, timeout=30, error=None):
+        '''
+        等待界面某一元素的特定文字加载出来
+        '''
+        time_list = self.getTimeList(timeout)
+        for timeout in time_list:
+            try:
+                self.browser.wait_until_element_contains(selectorInfo, text, timeout, error)
+                return True
+            except Exception:
+                pass
+        debugLogger.error("等待一段时间后元素%s的文字%s仍未加载出来" % (selectorInfo, text))
+        return False
+
+    def waitUntilPageElementTextDisappeared(self,selectorInfo, text, timeout=30, error=None):
+        '''
+        等待界面某一元素的特定文字消失
+        '''
+        time_list = self.getTimeList(timeout)
+        for timeout in time_list:
+            try:
+                self.browser.wait_until_element_does_not_contain(selectorInfo, text, timeout, error)
+                return True
+            except Exception:
+                pass
+        debugLogger.error("等待一段时间后元素%s的文字%s仍未消失" % (selectorInfo, text))
+        return False
+
+    def waitUntilPageElementDisappeared(self,selectorInfo, timeout=30, error=None, limit=None):
+        '''
+        等待界面某一元素消失
+        '''
+        time_list = self.getTimeList(timeout)
+        for timeout in time_list:
+            try:
+                self.browser.wait_until_page_does_not_contain_element(selectorInfo, timeout, error, limit)
+                return True
+            except Exception:
+                pass
+        debugLogger.error("等待一段时间后元素%s仍未消失" % selectorInfo)
+        return False
+
+    def pageShouldNotContain(self, text, loglevel='TRACE'):
+        """
+        页面不应有该内容
+        """
+        try:
+            self.browser.page_should_not_contain(text, loglevel)
+            return True
+        except Exception as e:
+            debugLogger.error("页面不应有该内容:%s" % e)
+            return False
+    def getSource(self):
+        '''
+        返回当前页面或框架的整个HTML源。
+        :return:
+        '''
+        try:
+            res = self.browser.get_source()
+            if res == "":
+                debugLogger.error("当前页面HTML元素为空")
+                raise Exception
+        except Exception as e:
+            debugLogger.error("方法异常%s" % e)
+
+        return res
+
+
+    ####################################################################################
+    # 执行javaScript操作
+    ###################################################################################
+
+    def executeAsyncJavascript(self, *code):
+        '''
+        执行异步java 脚本代码。
+        代码可以包含多行代码但是必须包含返回信息。
+        代码可以在测试数据中被分割为多个单元。
+        即便如此，彼此关联的组件间丌允许任意增加空间。
+        如果被执行代码的路径为绝对路径，那么 javascript将从这个绝对路径文件中读取并运行。
+        '''
+        return self.browser.execute_async_javascript(*code)
+
+    def executeJavascript(self, *code):
+        '''
+        执行java 脚本代码。
+        代码可以包含多行代码但是必须包含返回信息。
+        代码可以在测试数据中被分割为多个单元。
+        即便如此，彼此关联的组件间丌允许任意增加空间。
+        如果被执行代码的路径为绝对路径，那么 javascript将从这个绝对路径文件中读取并运行。
+        '''
+        return self.browser.execute_javascript(*code)
+
+    ####################################################################################
+    # 页面截图
+    ####################################################################################
+    def getScreenShot(self, fileSaveDirPath):
+        '''
+        页面截图
+        '''
+        fileName = "webShot_%s.png" % time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        fileNamePC = "webShotPC_%s.png" % time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        filePath = fileSaveDirPath+"/"+fileName
+        filePCPath = fileSaveDirPath+"/"+fileNamePC
+        filePath_tmp = fileSaveDirPath.split("/")[-1] if "/" in fileSaveDirPath else fileSaveDirPath.split(r"\\")[-1]
+        filePathShare = r"\\%s\ScreenShot\%s\%s" % (G.VAR_LOCALHOST_IP, filePath_tmp, fileName)
+        filePCPathShare = r"\\%s\ScreenShot\%s\%s" % (G.VAR_LOCALHOST_IP, filePath_tmp, fileNamePC)
+        debugLogger.info("[保存当前屏幕抓拍（已共享）]：%s (%s)" % (filePCPathShare,filePCPath))
+        im = ImageGrab.grab()
+        im.save(filePCPath, 'jpeg')
+
+        self.browser.capture_page_screenshot(filePath)
+        debugLogger.info("[保存当前WEB界面抓拍（已共享）]：%s (%s)" % (filePathShare, filePath))
+
+        time.sleep(1)
+        return filePath
+
+    def capture_page_screenshot(self, filePath):
+        self.browser.capture_page_screenshot(filePath)
+
+
+
+
+if __name__ == "__main__":
+    pass
+    # web = webAction2('http://3.4.67.158')
+    # # print(os.path.join(os.path.dirname(os.path.abspath(__file__)),'configYml\config_Chinese.yaml'))
+    # configYaml = get_yamlfile_info(os.path.join(os.path.dirname(os.path.abspath(__file__)),'configYml\config_Chinese.yaml'))
+    # print(type(configYaml['VersionFilter']))
+    # print(configYaml['VersionFilter'].keys())
+    # print(configYaml['SdkConfig']["SdkIp"])
+    # web=webAction2()
+    # web.FirstVisitAlertProcess()
+
+
+
+
+
