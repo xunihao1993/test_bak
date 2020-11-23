@@ -1,0 +1,290 @@
+# -*- coding: UTF-8 -*-
+
+######################################################################################################
+###基本配置 只要符合下面的版本信息里存在下列的键即映射到对应的版本元素，例如Eiico版本号为SDC 8.0.2.B001信息中存在SDC 8.0.2 则映射到对应版本元素【一般只需添加设配,无需修改】
+###版本号获取方式：1、eiico软件版本号 2、wen端页面下面的设备版本。    优先取eiico环境服务版本号  eiico获取不到才使用web端的版本号映射
+### 不支持801之前的版本
+##【*重点*】 yaml里面的变量不可以重复
+VersionFilter:
+  #8.0.1版本
+  SDC 8.0.1: '8.0.1'
+  SDC 8.0.T1129: '8.0.1'
+
+  ###8.0.2版本
+  SDC 8.0.2: '8.0.2'
+  SDC 8.0.RC201:  '8.0.2'
+
+  ###8.1.0版本：
+  SDC 8.1.RC1:  '8.1.0'
+  SDC 8.1.0:   '8.1.0'
+
+  ###8.2.0版本
+  SDC 8.2.0:  '8.2.0'
+  SDC 8.2:  '8.2.0'
+  8.2: '8.2.0'
+
+
+
+
+
+
+####################################################################################################
+##用例只会匹配版本下的元素，公共元素为公共方法引用
+#  变量一：选择器匹配公式   变量二：选择器匹配到的对应不同语言的值  该文件为中文
+# css选择器格式： ["css:XXXXXX","对应中文值"]
+# xpath选择器格式： ["xpath:XXXXXX","对应中文值"]
+# id选择器格式： ["XXXXXX",对应中文值]
+###################################################################################################
+
+
+
+##全版本公用元素  公用元素没有层次关系，全部在Public下面写元素
+Public:
+##登录页面公共元素
+  loginUserName: ["loginUserName", "用户名"]
+  loginPwd: ["loginPwd", "密码"]
+  loginBtn: ["loginBtn", "登录"]
+  loginErrMsgSpan: ["loginErrMsgSpan", "登录错误提示"]
+  Preview: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon preview']", "预览配置"]
+
+  oldPasswordId: ['oldPasswordId', "原密码"]
+  updatepassWordId: ["updatepassWordId", '新密码']
+  updatepassWordId2: ['updatepassWordId2', "确认密码"]
+  pwdPeriodId: ['pwdPeriodId', "密码有效期"]
+  ok: ["xpath://button[@class='ucd-dialog-btn btn-ok']", "确定"]
+
+  infoBlockIDImage: ["infoBlockIDImage", "详细信息"]
+  overridelink: ['overridelink', "转到此网页(不推荐)"]
+
+  # 语言选择器
+  loginLanguage: ['css:.ucd-droplist-content .ucd-droplist-option.selected',"当前登录页面语言"]
+  # 语言下拉框
+  Chinese: ['css:div.ucd-droplist-content>ul>li[data-value="0"]','简体中文']  # 中文
+  English: ['css:div.ucd-droplist-content>ul>li[data-value="1"]','English']   # 英语
+  French: ['css:div.ucd-droplist-content>ul>li[data-value="5"]','Español']    # 法文
+  Spanish: ['css:div.ucd-droplist-content>ul>li[data-value="2"]','Français']  # 西班牙
+
+  # 注销
+  userId: ['css:.user-info#userId', "用户Id"]  # 登录成功后右上角用户元素
+  logout: ['logout', '注销']
+  okLogout: ['css:.ucd-dialog.dialog.open .ucd-dialog-btn.btn-ok', '确认注销']
+
+
+
+
+
+
+
+## 不同版本的页签及按钮元素选择器，按页签层级，【*重点*】info代表父节点本身选择器 每一个节点都必须有自身的选择器来匹配 否则方法报错
+8.0.1:
+  Public:
+###没有层级结构放xpath的路径
+    info: ["",""]
+    defaultCheckPasswdId: ["xpath://input[@id='defaultCheckPasswdId']", "当前用户名密码"]
+    ###恢复默认的确定
+    defaultCheckPasswordTipdialog: ["xpath://div[@id='defaultCheckPassword-Tip-dialog']/div[3]/button[1]", "确定"]
+    ###远程重启的确定
+    ucddialogbtn: ["xpath://div[10]/div[3]/button[1]", "确定"]
+    ucd-dialog-content: ["xpath://div[@class='ucd-dialog dialog width430 open']/div[@class='ucd-dialog-footer']/button[text()='确定']", "重置图像参数的确定"]
+    StartingLiveVideo: ["//div[@class='ucd-dialog dialog width300 open']/div[text()='请先开启实况']", "开启实况确定按钮"]
+  Preview:
+    info: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon preview']", "预览配置"]
+    StopPreview: ["css:span.video-tool-icon.video-icon1#previewStartAndStop","停止实况浏览"]
+    OpenPreview: ["css:span.video-tool-icon.video-icon10#previewStartAndStop","开启实况浏览"]
+    RecodeStart: ["xpath://span[@class='video-tool-icon video-icon2']", "开始本地录像"]
+    RecodeStop: ["xpath://span[@class='video-tool-icon video-icon2 active']", "结束本地录像"]
+    SnapshotId: ["css:#SnapshotId", "抓拍"]
+    RecodePath: ["xpath://div[@class='ucd-dialog-content dir-pointer']", "录像保存路径:智能获取到一部分"]
+    ucdTab: ["xpath://a[@id='ucdTab_cloud']", "云台"]
+    aside-tri-icon: ["xpath://span[@class='aside-tri-icon']", "右标签栏"]
+    aside-tri-close: ["css:#main_aside_tri>span", "右便签栏关闭状态"]  ##css写法 用于js点击（IE中JS点击只能用css选择器）
+    aside-tri-clos: ["xpath://div[@class='aside-tri close']/span", "右便签栏关闭状态"]
+    aside-tri-open: ["xpath://div[@class='aside-tri']/span","右拉便签开启状态"]
+    c-icon_cloud-icon1: ["xpath://span[@class='c-icon cloud-icon1']", "左上角"]
+    c-icon_cloud-icon2: ["xpath://span[@class='c-icon cloud-icon2']", "上"]
+    c-icon_cloud-icon3: ["xpath://span[@class='c-icon cloud-icon3']", "右上角"]
+    c-icon_cloud-icon4: ["xpath://span[@class='c-icon cloud-icon4']", "左"]
+    c-icon_cloud-icon5: ["xpath://span[@class='c-icon cloud-icon5']", "转到看守位"]
+    c-icon_cloud-icon6: ["xpath://span[@class='c-icon cloud-icon6']", "右"]
+    c-icon_cloud-icon7: ["xpath://span[@class='c-icon cloud-icon7']", "左下角"]
+    c-icon_cloud-icon8: ["xpath://span[@class='c-icon cloud-icon8']", "下"]
+    c-icon_cloud-icon9: ["xpath://span[@class='c-icon cloud-icon9']", "右下角"]
+    expand_lenId: ["xpath://span[@id='expand_lenId']", "变倍+"]
+    reduce_lenId: ["xpath://span[@id='reduce_lenId']", "变倍-"]
+    large_lenId: ["xpath://span[@id='large_lenId']", "调焦+"]
+    small_lenId: ["xpath://span[@id='small_lenId']", "调焦-"]
+    onePushId: ["xpath://span[@id='onePushId']", "一键对焦"]
+    large_sencecontrolId: ["xpath://span[@id='large_sencecontrolId']", "光圈+"]
+    small_sencecontrolId: ["xpath://span[@id='small_sencecontrolId']", "光圈-"]
+    wiperOpenId: ["xpath://span[@id='wiperOpenId']", "雨刷开启"]
+    wiperCloseId: ["xpath://span[@id='wiperCloseId']", "雨刷关闭"]
+  Record:
+    info: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon record']", "录像"]
+    Playback: ["xpath://li[@id='playback']", "录像回放"]
+    Download: ["xpath://li[@id='download']", "录像下载"]
+    RecordPlan: ["xpath://li[@id='record_plan']", "录像计划"]
+
+  Picture:
+    info: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon picture']", "图片"]
+    SnapConfig: ["xpath://li[@id='snap_config']", "抓拍设置"]
+    PicDownloadIts: ["xpath://li[@id='pic_download_its']", "图片下载"]
+    Ftp: ["xpath://li[@id='ftp']", "FTP"]
+
+  Maintain:
+    info: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon maintain']", "维护"]
+    Log: ["xpath://li[@id='log']", "日志"]
+    LogCollConfig: ["xpath://li[@id='log_coll_config']", "日志采集配置"]
+    Mang:
+      info: ["xpath://li[@id='mang']", "设备重置"]
+      DevInfoId:
+        info: ["xpath://li[@id='mang']", "设备信息"]  #820之后元素不在设备重置里面，820之前点击到设备信息相当点击到设备重置元素即可实现
+        DevTxtsoftversion: ["css:#txtsoftversion","设备信息下的软件版本信息"]
+
+      DevOperaId:
+        info: ["xpath://h3[@id='DevOperaId']", "设备操作"]
+        RemoteRestart: ["xpath://button[@id='RemoteRestart']", "远程重启"]
+        Restore: ["xpath://button[@id='Restore']", "恢复默认配置"]
+    Upgrade:
+      info: ["xpath://li[@id='upgrade']", "设备升级"]
+      UptxtSoftVersion: ["css:#txtSoftVersion","软件版本信息"]
+    AppDefin: ["xpath://li[@id='app_defin']", "应用定义摄像机"]
+    APP:
+      info: ["xpath://span[@id='goToAppDeskTitle']", "APP桌面"]
+      model: ["xpath://span[@id='model']", "APP设备型号"]
+
+  Settings:
+    info: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon setting']", "高级配置"]
+    Streams:
+      info: ["xpath://li[@id='streams']/a/span", "音视图"]
+      VideoStream: ["xpath://li[@id='video_stream']/a/span", "视频流参数"]
+      AudioStream: ["xpath://li[@id='audio_stream']/a/span", "音频流参数"]
+      IspCommon:
+        info: ["xpath://li[@id='isp_common']/a/span", "图像参数"]
+        image_adjustment: ["xpath://h3[@id='image_adjustment']", "图像调节"]
+        ICR:
+          info: ["xpath://h3[@id='ICR']", "日夜转换"]
+          ispDayNightModeDropList:
+            info: ["xpath://div[@id='ispDayNightModeDropList']/div/div/input", "模式"]
+            ucd_droplist_option_selected: ["xpath:/html/body/div[6]/ul/li[1]/span", "自动模式"]
+            ucd_droplist_option_Q: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='彩色模式']", "彩色模式"]
+            ucd_droplist_option_B: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='黑白模式']", "黑白模式"]
+          ispIRCutSwitchModeId: ["xpath://div[@id='ispIRCutSwitchModeId']/div/div/input", "昼夜触发方式"]
+          isplAutoIRCThresholdDropList: ["xpath://div[@id='isplAutoIRCThresholdDropList']/div/div/input", "灵敏度"]
+        exposure:
+          info: ["xpath://h3[@id='exposure']", "曝光"]
+          enAEModeIdSpan:
+            info: ["xpath://div[@id='ispEnAEModeDropList']/div/div/input", "曝光模式"]
+            ucd_droplist_option0: ["xpath:/html/body/div[11]/ul/li[1]", "光圈优先"]
+            ucd-droplist-option1: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='手动曝光']", "手动曝光"]
+            ucd-droplist-option2: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='自动曝光']", "自动曝光"]
+          CamIrisControlSpan_id: ["xpath://label[@id='CamIrisControlSpan']", "光圈"]
+          CamIrisControlSpan:
+            info: ["xpath://div[@id='ispCamIrisControlDropList']/div/div/input", "光圈"]
+            ucd-droplist-option-1.6: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F1.6']", "F1.6"]
+            ucd-droplist-option-2.0: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F2.0']", "F2.0"]
+            ucd-droplist-option-2.8: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F2.8']", "F2.8"]
+            ucd-droplist-option-4.0: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F4.0']", "F4.0"]
+            ucd-droplist-option-5.6: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F5.6']", "F5.6"]
+            ucd-droplist-option-8.0: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F8.0']", "F8.0"]
+            ucd-droplist-option-11.0: ["xpath://div[@class='ucd-droplist-content open']/ul/li/span[text()='F11.0']", "F11.0"]
+        focus: ["xpath://h3[@id='focus']", "聚焦"]
+        backligth:
+          info: ["xpath://h3[@id='backligth']", "背光"]
+          enBackLightModeSpan:
+            info: ["xpath://div[@id='ispBackLightModeDropList']/div/div/input", "背光/宽动态/强光抑制"]
+            ucd-droplist-option-kuan: ["xpath://div/ul/li/span[text()='宽动态']", "宽动态"]
+          CamWDParaLvlSpan: ["xpath://input[@id='ispCamWDLvlParaSlider_ctrl']", "数值"]
+        white_balance: ["xpath://h3[@id='white_balance']", "白平衡"]
+        image_enhancement: ["xpath://h3[@id='image_enhancement']", "图像增强"]
+        lrLightId: ["xpath://h3[@id='lrLightId']", "红外灯控制"]
+        dZoomTitle: ["xpath://h3[@id='dZoomTitle']", "数字变倍"]
+        camIspDefaultBtnId: ["xpath://button[@id='camIspDefaultBtnId']", "重置"]
+      IspPackage: ["xpath://li[@id='isp_package']", "图像/码流套餐"]
+      IspPackagePlan: ["xpath://li[@id='isp_package_plan']", "图像套餐计划"]
+      OsdNew: ["xpath://li[@id='osd_new']", "OSD参数"]
+      OsdPicture: ["xpath://li[@id='osd_picture']", "图片叠加"]
+      WhitebalanceArea: ["xpath://li[@id='whitebalance_area']", "白平衡区域选择"]
+      Roi: ["xpath://li[@id='roi']", "ROI参数"]
+
+    Network:
+      info: ["xpath://li[@id='network']", "网络"]
+      TcpIp: ["xpath://li[@id='tcp_ip']", "TCP/IP"]
+      Platform:
+        info: ["xpath://li[@id='platform']", "平台对接参数"]
+        platformParaId: ["xpath://h3[@id='platformParaId']", "SDK参数"]
+        SecondProtocol: ["xpath://h3[@id='SecondProtocol']", "第二协议参数"]
+        pswControl:
+          info: ["xpath://h3[@id='pswControl']", "密码管理"]
+          SDKPswId:
+            info: ["xpath://div[@id='SDKPswId']", "SDK密码"]
+            SDKOldPasswdId: ["xpath://input[@id='SDKOldPasswdId']", "Web用户密码"]
+            SDKNewPasswdId: ["xpath://input[@id='SDKNewPasswdId']", "新密码"]
+            SDKConfirmPasswdId: ["xpath://input[@id='SDKConfirmPasswdId']", "新密码"]
+          OnvifPswId:
+            info: ["xpath://div[@id='OnvifPswId']", "北向接口密码"]
+            onvifOldPasswdId: ["xpath://input[@id='onvifOldPasswdId']", "Web用户密码"]
+            onvifNewPasswdId: ["xpath://input[@id='onvifNewPasswdId']", "新密码"]
+            onvifConfirmPasswdId: ["xpath://input[@id='onvifConfirmPasswdId']", "新密码"]
+          RESTPswId: ["xpath://div[@id='RESTPswId']", "ONVIF密码"]
+          liDB3311Psw: ["xpath://div[@id='liDB3311Psw']", "DB3311密码"]
+        ThirdPartyCustomizationPlatform: ["xpath://h3[@id='ThirdPartyCustomizationPlatform']", "第三方案控制平台"]
+      RouteConfig: ["xpath://li[@id='route_config']", "路由配置"]
+      IpFilter: ["xpath://li[@id='ip_filter']", "IP过滤"]
+      Port: ["xpath://li[@id='port']", "端口配置"]
+      Ddns: ["xpath://li[@id='ddns']", "DDNS"]
+      Snmp: ["xpath://li[@id='snmp']", "SNMP"]
+      Smpt: ["xpath://li[@id='smpt']", "SMTP"]
+      P8021x: ["xpath://li[@id='p8021x']", "802.1X"]
+      NetworkAcceleration: ["xpath://li[@id='network_acceleration']", "网络智能加速"]
+      SshSftp:
+        info: ["xpath://li[@id='ssh_sftp']", "SSH/SFTP"]
+        sshTitle:
+          info: ["xpath://h3[@id='sshTitle']", "SSH配置"]
+          sshEnableId: ["css:#page-network-ssh>div.panel-content.ucd-accordion-content.active>div>div.flow-con-item.mb10>div>label>span>span", "启用SSH"]
+          sshSaveBtnId: ["xpath://button[@id='sshSaveBtnId']", "保存SSH使能"]
+        sftpTitle:
+          info: ["xpath://h3[@id='sftpTitle']", "SFTP配置"]
+          sftpEnable: ["xpath://input[@id='sftpEnable']", "启用SSH"]
+          sftpSaveBtnId: ["xpath://button[@id='sftpSaveBtnId']", "保存SFTP使能"]
+        SshSftpEnable: ["xpath://span[@class='ucd-check ucd-check-checkbox ucd-checked']", "检测ssh或sftp使能是否打开"]
+      Security: ["xpath://li[@id='security']", "安全选项"]
+
+    Alarms:
+      info: ["xpath://li[@id='alarms']", "告警配置"]
+      DeviceAlertDeployment: ["xpath://li[@id='device_alert_deployment']", "设备布防"]
+      AlarmConfig: ["xpath://li[@id='alarm_config']", "告警配置"]
+      TemperatureAlarm: ["xpath://li[@id='temperature_alarm']", "温度告警"]
+      CertExpireAlarm: ["xpath://li[@id='cert_expire_alarm']", "证书有效期告警"]
+      SystemIntrusionAlarm: ["xpath://li[@id='system_intrusion_alarm']", "系统入侵告警"]
+
+    System:
+      info: ["xpath://li[@id='system']", "系统配置"]
+      system_info: ["xpath://li[@id='system_info']", "系统信息"]
+      media_info: ["xpath://li[@id='media_info']", "媒体流信息"]
+      time_setting:
+        info: ["xpath://li[@id='time_setting']/a/span", "时间设置"]
+        device_time: ["xpath://div[@id='setuptime_time']", "设备时间"]
+        manualTimeSync: ["css:label#manualTimeSyncId","校时方式--手动校时"]
+        NtpTime: ["css:label#Ntp_Id","校时方式--手动校时"]
+        ucd_check_mrk: ["xpath://*[@id='syncPCId']/span/span", "勾选与计算器时间同步"]
+        time_save_btn: ["xpath://*[@id='time_save_btn']", "保存"]
+      local_settings: ["xpath://li[@id='local_settings']", "本地参数"]
+      storage_management:
+        info: ["xpath://li[@id='storage_management']", "存储管理"]
+        showSDTip: ["xpath://label[@id='showSDTip']", "SD卡状态"]
+      user_management: ["xpath://li[@id='user_management']", "用户管理"]
+      config_management: ["xpath://li[@id='config_management']", "配置管理"]
+      visible_area: ["xpath://li[@id='visible_area']", "可视区域信息"]
+      power_sync: ["xpath://li[@id='power_sync']", "电源同步"]
+      password_manage: ["xpath://li[@id='password_manage']", "密码管理"]
+
+  Service:
+    info: ["xpath://i[@class='firstTitleClick icon-hover my-icon nav-icon service']", "服务"]
+    Peripherals:
+      info: ["xpath://li[@id='peripherals']", "IO口配置"]
+      IoConfig: ["xpath://li[@id='io_config']", "扩展接口服务"]
+      Rs485Config: ["xpath://li[@id='rs485_config']", "RS485口配置"]
+
+    Alarm:
+      info: ["xpath://li[@id='alarm']", "告警服务"]
+      Input: ["xpath://li[@id='input']", "告警输入"]
