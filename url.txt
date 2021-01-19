@@ -153,7 +153,8 @@ export PATH="$PATH:/usr/local/yasm/bin"
 
 /etc/profile 文件末尾添加export PATH="$PATH:/usr/local/yasm/bin"
 
-
+##20210119
+https://www.cnblogs.com/xiaotengyi/p/7059461.html  ##core文件撑满硬盘
 
 
 
