@@ -128,6 +128,9 @@ https://www.cnblogs.com/canglongdao/p/12204963.html  ##阿里云centos7安装mys
 ## 1121
 https://blog.csdn.net/harry_haiwei/article/details/49930163  ##celery--elery不能root用户启动解决(C_FORCE_ROOT environment)
 
+## 20210129
+https://blog.csdn.net/qq_42517220/article/details/87531789  ##supervisor 
+
 'Parsed_null_0' and the filter 'auto_scaler_0'  ##ffmpeg报错
     Stream #0:0(und): Video: hevc (Main) (hvc1 / 0x31637668), yuvj420p(pc, bt709), 3840x2160, 7012 kb/s, 25 fps, 25 tbr, 25 tbn, 25 tbc (default)
 Impossible to convert between the formats supported by the filter 'Parsed_null_0' and the filter 'auto_scaler_0'
@@ -155,6 +158,7 @@ export PATH="$PATH:/usr/local/yasm/bin"
 
 ##20210119
 https://www.cnblogs.com/xiaotengyi/p/7059461.html  ##core文件撑满硬盘
+
 
 
 
