@@ -1,0 +1,35 @@
+由于自动化测试测试环境，Python2.7 + selenium ，Chromedriver版本的约束性，导致我们机子上的Chrome浏览器需要降级。
+
+重装 chrome 遇到了这个问题 
+
+该计算机已安装了更高版本的Google Chrome浏览器。如果该软件无法正常运行，请卸载Google Chrome浏览器，然后重试。
+
+
+
+尝试了很多种方法，终于找到有效的方法：
+
+1、 首先删除 C:\Program Files   和  C:\Users\username\AppData   中 Google 文件夹，具体所在位置视系统不同而不同 ，也可以直接在c盘中搜索，删除有关chrome的文件夹。
+
+2、 打开注册表：
+
+windows键 + R      ————  输入regedit         ————     回车
+
+3、 找到
+
+32位：HKEY_LOCAL_MACHINE\SOFTWARE\Google
+
+64位：HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Google
+
+删除即可
+
+4、 重新启动安装较低版本的Chrome浏览器。如附件中，我们使用的chrome 48的版本
+
+5、安装完后，不要急着使用Chrome浏览器，可以先断网进行如下操作。
+
+6、从控制面板——任务计划程序——任务计划程序库中，找到两个任务，并禁用。
+
+GoogleUpdateTaskMachineUA   GoogleUpdateTaskMachineCore
+
+
+
+7、全部禁用后，可以使用Chrome浏览器了，不担心它会自动升级，而导致环境不可用了。
