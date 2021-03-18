@@ -39,6 +39,10 @@ https://blog.csdn.net/cats_miao/article/details/82558756  #charam空格配置
 #收纳笔记20210208
 https://www.cnblogs.com/scolia/p/5633351.html  # django http请求头
 
+#收纳笔记 20210318
+模式r'(.*?)'的意图是匹配被和包含的文本，但是正则表达式中*操作符是贪婪的，因此匹配操作会查找出最长的可能。
+但是在*操作符后面加上？操作符，这样使得匹配变成非贪婪模式，从而得到最短匹配。
+
 # 0708
 https://segmentfault.com/q/1010000012202637  ##django前后端分离 状态保持
 https://www.byincd.com/bobjiang/article-01102/   ##django和vue前后端分离状态保持
@@ -196,3 +200,4 @@ https://blog.csdn.net/LJFPHP/article/details/78691875
 https://www.crifan.com/summary_python_unicodedecode_error_possible_reasons_and_solutions/
 #20200527
 FSCapture
+
