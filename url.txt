@@ -205,3 +205,7 @@ FSCapture
 http://ftp.slps.tn.edu.tw/eduweb/natural/%E6%9C%88%E4%BA%AE%E7%9A%84%E4%BD%8D%E7%BD%AE.ppt
 # 软件待归档 20210322
 spacesniffer_1_3_0_2_查看磁盘大小
+
+#0329 待攻克
+https://github.com/umijs/umi/issues/1142  #umi 路由配置
+
