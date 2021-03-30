@@ -126,7 +126,7 @@ https://www.cnblogs.com/frank-quan/p/4289973.html  ##ffmpeg 安装
 ##1109
 https://blog.csdn.net/caicaibird0531/article/details/90694849?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf  ##lxml
 https://www.runoob.com/xpath/xpath-syntax.html  ##xpath语法
-
+https://blog.csdn.net/caorya/article/details/81839928 ##Xpath判断某个属性是否包含或不包含指定的属性或值
 ##1120
 https://www.cnblogs.com/canglongdao/p/12204963.html  ##阿里云centos7安装mysqlclient,报错mysql_config:command not found
 
