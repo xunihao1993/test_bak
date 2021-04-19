@@ -209,7 +209,7 @@ spacesniffer_1_3_0_2_查看磁盘大小
 #0329 待攻克
 https://github.com/umijs/umi/issues/1142  #umi 路由配置
 
-#0419
+#0419 记录项目中遇到的问题
 https://www.huaweicloud.com/articles/1a0943c1576feb980cadfc22642b070f.html  #远程执行CMD命令
-wmic /node:192.168.1.158 /user:pt007 /password:admin123  process call create "cmd.exe /c ipconfig>d:\result.txt"
+wmic /node:192.168.1.158 /user:pt007 /password:admin123  process call create "cmd.exe /c ipconfig>d:\result.txt" 
 
